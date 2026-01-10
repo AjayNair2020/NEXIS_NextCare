@@ -1,18 +1,18 @@
 import { HealthMetric, Appointment, Medication, PatientProfile, Doctor, HealthIncident, TaxonomyNode, Facility, InventoryItem, TransportVehicle, OperationalService, ServiceArea, OptimizationScenario } from './types';
 
 export const MOCK_FACILITIES: Facility[] = [
-  { id: 'fac-1', name: 'UCSF Medical Center', type: 'hospital', lat: 37.7631, lng: -122.4578, status: '92% Occupancy', capacity: 500, storageLevel: 85 },
-  { id: 'fac-2', name: 'Zuckerberg SF General', type: 'hospital', lat: 37.7558, lng: -122.4047, status: 'Critical Load', capacity: 400, storageLevel: 60 },
+  { id: 'fac-1', name: 'UCSF Medical Center', type: 'hospital', lat: 37.7631, lng: -122.4578, status: '92% Occupancy', capacity: 500, storageLevel: 85, connectedHubId: 'log-1' },
+  { id: 'fac-2', name: 'Zuckerberg SF General', type: 'hospital', lat: 37.7558, lng: -122.4047, status: 'Critical Load', capacity: 400, storageLevel: 60, connectedHubId: 'log-2' },
   { id: 'fac-3', name: 'Walgreens Pharmacy Hub', type: 'pharmacy', lat: 37.7712, lng: -122.4344, status: 'Active Dispatch', connectedHubId: 'log-1', storageLevel: 45 },
-  { id: 'fac-4', name: 'Mission Health Clinic', type: 'hospital', lat: 37.7599, lng: -122.4148, status: 'Nominal', storageLevel: 90 },
+  { id: 'fac-4', name: 'Mission Health Clinic', type: 'hospital', lat: 37.7599, lng: -122.4148, status: 'Nominal', storageLevel: 90, connectedHubId: 'log-1' },
   { id: 'log-1', name: 'Bay Area Med Logistics', type: 'logistics', lat: 37.7831, lng: -122.4182, status: 'Full Stock', storageLevel: 95 },
   { id: 'log-2', name: 'South SF Supply Hub', type: 'logistics', lat: 37.7411, lng: -122.3965, status: 'Emergency Protocol', storageLevel: 30 },
 ];
 
 export const MOCK_SERVICE_AREAS: ServiceArea[] = [
-  { id: 'sa-1', name: 'Mission / Castro District', responsibleFacilityId: 'fac-4', populationServed: 45000, criticalIncidentCount: 12, avgResponseTimeMin: 8.2, efficiencyScore: 88 },
-  { id: 'sa-2', name: 'Financial District', responsibleFacilityId: 'fac-1', populationServed: 25000, criticalIncidentCount: 3, avgResponseTimeMin: 12.5, efficiencyScore: 92 },
-  { id: 'sa-3', name: 'SoMa / Market', responsibleFacilityId: 'fac-2', populationServed: 38000, criticalIncidentCount: 22, avgResponseTimeMin: 15.4, efficiencyScore: 65 },
+  { id: 'sa-1', name: 'Mission / Castro District', responsibleFacilityId: 'fac-4', populationServed: 45000, criticalIncidentCount: 12, avgResponseTimeMin: 8.2, efficiencyScore: 88, lat: 37.7600, lng: -122.4200, radius: 1500 },
+  { id: 'sa-2', name: 'Financial District', responsibleFacilityId: 'fac-1', populationServed: 25000, criticalIncidentCount: 3, avgResponseTimeMin: 12.5, efficiencyScore: 92, lat: 37.7900, lng: -122.4000, radius: 1000 },
+  { id: 'sa-3', name: 'SoMa / Market', responsibleFacilityId: 'fac-2', populationServed: 38000, criticalIncidentCount: 22, avgResponseTimeMin: 15.4, efficiencyScore: 65, lat: 37.7750, lng: -122.4100, radius: 1800 },
 ];
 
 export const MOCK_SCENARIOS: OptimizationScenario[] = [

@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { MOCK_SCENARIOS, MOCK_SERVICE_AREAS, MOCK_FACILITIES, MOCK_INVENTORY } from '../constants';
 import { OptimizationScenario, ServiceArea } from '../types';
 import { optimizeHealthcareOperations } from '../services/gemini';
+import HealthMap from './HealthMap';
 
 const OperationalOptimizer: React.FC = () => {
   const [scenarios, setScenarios] = useState<OptimizationScenario[]>(MOCK_SCENARIOS);
   const [selectedScenario, setSelectedScenario] = useState<OptimizationScenario | null>(null);
+  const [selectedArea, setSelectedArea] = useState<ServiceArea | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [activeTab, setActiveTab] = useState<'scenarios' | 'areas'>('scenarios');
 
   const runOptimization = async (scenario: OptimizationScenario) => {
     setIsOptimizing(true);
-    // Prepare a snapshot of the current system state for the AI
     const systemState = {
       facilities: MOCK_FACILITIES.map(f => ({ id: f.id, load: f.status, cap: f.capacity })),
       inventory: MOCK_INVENTORY.map(i => ({ id: i.id, name: i.name, qty: i.quantity, loc: i.locationId })),
@@ -33,7 +34,7 @@ const OperationalOptimizer: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">Operational Strategy Hub</h2>
@@ -41,14 +42,14 @@ const OperationalOptimizer: React.FC = () => {
         </div>
         <div className="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200">
           <button 
-            onClick={() => setActiveTab('scenarios')}
-            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'scenarios' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-slate-500'}`}
+            onClick={() => { setActiveTab('scenarios'); setSelectedArea(null); }}
+            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'scenarios' ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'text-slate-500'}`}
           >
             Sim Scenarios
           </button>
           <button 
             onClick={() => setActiveTab('areas')}
-            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'areas' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-slate-500'}`}
+            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'areas' ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'text-slate-500'}`}
           >
             Service Areas
           </button>
@@ -67,8 +68,8 @@ const OperationalOptimizer: React.FC = () => {
                   onClick={() => setSelectedScenario(scen)}
                   className={`w-full text-left p-6 rounded-2xl border transition-all ${
                     selectedScenario?.id === scen.id 
-                      ? 'bg-indigo-50 border-indigo-200 shadow-sm' 
-                      : 'bg-white border-slate-100 hover:border-indigo-100'
+                      ? 'bg-blue-50 border-blue-200 shadow-sm' 
+                      : 'bg-white border-slate-100 hover:border-blue-100'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-3">
@@ -95,7 +96,11 @@ const OperationalOptimizer: React.FC = () => {
             <div className="space-y-4">
                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Service Area Coverage</h3>
                {MOCK_SERVICE_AREAS.map(area => (
-                 <div key={area.id} className="bg-white p-5 rounded-2xl border border-slate-100">
+                 <button 
+                  key={area.id} 
+                  onClick={() => setSelectedArea(area)}
+                  className={`w-full text-left bg-white p-5 rounded-2xl border transition-all ${selectedArea?.id === area.id ? 'border-blue-500 ring-2 ring-blue-500/10 shadow-md' : 'border-slate-100 hover:border-blue-200'}`}
+                 >
                     <div className="flex justify-between items-start mb-4">
                        <div>
                           <h4 className="font-bold text-slate-800 text-sm">{area.name}</h4>
@@ -115,14 +120,30 @@ const OperationalOptimizer: React.FC = () => {
                           <p className="text-xs font-bold text-rose-500">{area.criticalIncidentCount}</p>
                        </div>
                     </div>
-                 </div>
+                 </button>
                ))}
             </div>
           )}
         </div>
 
-        {/* Right: Optimization Engine View */}
-        <div className="lg:col-span-2">
+        {/* Right: Optimization Engine / Map View */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Spatial Awareness Map for strategy planning */}
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="px-8 py-4 border-b border-slate-50 flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-slate-800">Spatial Strategy Planner</h4>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Service Area Boundaries & Efficiency Overlay</p>
+              </div>
+              <div className="flex gap-2">
+                <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-full uppercase">Real-time GPS</span>
+              </div>
+            </div>
+            <div className="h-[350px] w-full relative">
+               <HealthMap variant="optimizer" selectedAreaId={selectedArea?.id || null} />
+            </div>
+          </div>
+
           {selectedScenario ? (
             <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 flex flex-col min-h-0 animate-in slide-in-from-right-4 duration-500">
               <div className="flex justify-between items-start mb-10 pb-8 border-b border-slate-50">
@@ -134,7 +155,7 @@ const OperationalOptimizer: React.FC = () => {
                   onClick={() => runOptimization(selectedScenario)}
                   disabled={isOptimizing}
                   className={`flex items-center gap-3 px-8 py-3.5 rounded-2xl font-bold transition-all ${
-                    isOptimizing ? 'bg-slate-100 text-slate-400' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-xl shadow-indigo-100'
+                    isOptimizing ? 'bg-slate-100 text-slate-400' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-100'
                   }`}
                 >
                   {isOptimizing ? (
@@ -163,8 +184,8 @@ const OperationalOptimizer: React.FC = () => {
                       <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mb-1">Predicted Gain</p>
                       <h4 className="text-3xl font-bold text-emerald-800">+{selectedScenario.aiRecommendations.efficiencyGain}%</h4>
                     </div>
-                    <div className="bg-indigo-50/50 p-6 rounded-3xl border border-indigo-100 col-span-2">
-                       <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest mb-3">AI Strategic Recommendation</p>
+                    <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100 col-span-2">
+                       <p className="text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-3">AI Strategic Recommendation</p>
                        <p className="text-slate-700 font-medium leading-relaxed">{selectedScenario.aiRecommendations.strategy}</p>
                     </div>
                   </div>
@@ -201,7 +222,7 @@ const OperationalOptimizer: React.FC = () => {
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-12">
-                   <div className="w-20 h-20 bg-indigo-50 text-indigo-400 rounded-full flex items-center justify-center mb-8 animate-pulse">
+                   <div className="w-20 h-20 bg-blue-50 text-blue-400 rounded-full flex items-center justify-center mb-8 animate-pulse">
                       <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
@@ -220,7 +241,7 @@ const OperationalOptimizer: React.FC = () => {
                </svg>
                <h3 className="text-2xl font-bold text-slate-800 mb-4 tracking-tight">Strategy Canvas</h3>
                <p className="text-slate-500 text-sm leading-relaxed max-w-md">
-                 Select a simulation scenario from the left to view detailed AI optimization models. You can also monitor real-time Service Area efficiency scores.
+                 Select a simulation scenario from the left to view detailed AI optimization models. You can also monitor real-time Service Area efficiency scores and spatial boundaries on the map above.
                </p>
             </div>
           )}

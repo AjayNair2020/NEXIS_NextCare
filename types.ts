@@ -105,6 +105,9 @@ export interface ServiceArea {
   criticalIncidentCount: number;
   avgResponseTimeMin: number;
   efficiencyScore: number;
+  lat: number;
+  lng: number;
+  radius: number; // in meters
 }
 
 export interface Medication {

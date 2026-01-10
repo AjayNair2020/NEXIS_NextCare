@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface SidebarProps {
@@ -20,39 +19,27 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
 
   return (
     <div className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen fixed left-0 top-0 z-10">
-      {/* NEXIS Branding Section */}
-      <div className="p-8 flex flex-col items-center border-b border-slate-50">
-        <div className="relative group mb-4">
-          {/* Stylized "N" / Infinity Logo using CSS to match uploaded asset */}
-          <div className="w-16 h-12 relative flex items-center justify-center">
-             {/* Left Loop */}
-             <div className="absolute left-0 w-8 h-8 rounded-full border-4 border-transparent border-t-cyan-400 border-l-cyan-400 -rotate-45"></div>
-             {/* Right Loop */}
-             <div className="absolute right-0 w-8 h-8 rounded-full border-4 border-transparent border-b-purple-500 border-r-purple-500 -rotate-45"></div>
-             {/* Intersection / N-path overlay */}
-             <div className="absolute w-12 h-6 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-full rotate-[-35deg] opacity-80 blur-[1px]"></div>
-             {/* Orange Accent - Top */}
-             <div className="absolute top-0 right-2 w-4 h-4 bg-orange-400 rounded-full blur-[2px] opacity-90 animate-pulse"></div>
-             {/* Orange Accent - Bottom */}
-             <div className="absolute bottom-0 left-2 w-4 h-4 bg-orange-400 rounded-full blur-[2px] opacity-90 animate-pulse" style={{ animationDelay: '1s' }}></div>
-          </div>
+      <div className="p-6 flex items-center gap-3">
+        <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
         </div>
-        <h1 className="text-2xl font-black text-blue-600 tracking-tighter uppercase">Nexis</h1>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] -mt-1">Health AI</p>
+        <h1 className="text-xl font-bold text-slate-800 tracking-tight">NextCare</h1>
       </div>
 
-      <nav className="flex-1 px-4 py-6 space-y-1">
+      <nav className="flex-1 px-4 py-4 space-y-1">
         {menuItems.map((item) => (
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
               activeTab === item.id
-                ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
+                ? 'bg-emerald-50 text-emerald-700 font-semibold'
                 : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
             }`}
           >
-            <svg className={`w-5 h-5 ${activeTab === item.id ? 'text-blue-600' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
             </svg>
             {item.label}
@@ -62,13 +49,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
 
       <div className="p-4 border-t border-slate-100">
         <div className="bg-slate-50 rounded-xl p-4">
-          <p className="text-xs text-slate-400 mb-1 font-semibold uppercase tracking-wider">Session Active</p>
-          <p className="text-sm font-bold text-slate-700">Alex Thompson</p>
-          <div className="flex items-center gap-2 mt-2">
-            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-            <span className="text-[10px] text-slate-500 font-bold uppercase">System Secure</span>
-          </div>
-          <button className="text-xs text-blue-600 mt-3 hover:underline font-bold">Log Out</button>
+          <p className="text-xs text-slate-400 mb-1">Signed in as</p>
+          <p className="text-sm font-medium text-slate-700">Alex Thompson</p>
+          <button className="text-xs text-emerald-600 mt-2 hover:underline">Log Out</button>
         </div>
       </div>
     </div>
