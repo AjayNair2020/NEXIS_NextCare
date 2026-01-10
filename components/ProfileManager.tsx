@@ -1,10 +1,12 @@
 
 import React, { useState } from 'react';
 import { PatientProfile, EmergencyContact } from '../types';
-import { MOCK_PROFILES } from '../constants';
+// Fixed: changed MOCK_PROFILES to MOCK_PATIENTS as exported from constants.tsx
+import { MOCK_PATIENTS } from '../constants';
 
 const ProfileManager: React.FC = () => {
-  const [profiles, setProfiles] = useState<PatientProfile[]>(MOCK_PROFILES);
+  // Fixed: use MOCK_PATIENTS instead of MOCK_PROFILES
+  const [profiles, setProfiles] = useState<PatientProfile[]>(MOCK_PATIENTS);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
 
@@ -17,6 +19,9 @@ const ProfileManager: React.FC = () => {
     email: '',
     phone: '',
     address: '',
+    // Fixed: added missing lat and lng properties required by PatientProfile interface
+    lat: 37.7749,
+    lng: -122.4194,
     medicalHistory: '',
     allergies: '',
     insuranceProvider: '',

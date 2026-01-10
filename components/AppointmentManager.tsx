@@ -1,22 +1,34 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Appointment, Doctor } from '../types';
 import { MOCK_APPOINTMENTS, MOCK_DOCTORS } from '../constants';
 
 const AppointmentManager: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>(MOCK_APPOINTMENTS);
   const [isBooking, setIsBooking] = useState(false);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [formData, setFormData] = useState({
     doctorId: '',
     date: '',
     time: '',
+    departureAddress: 'Current Location',
   });
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      });
+    }
+  }, []);
 
   const handleBookAppointment = (e: React.FormEvent) => {
     e.preventDefault();
     const selectedDoctor = MOCK_DOCTORS.find(d => d.id === formData.doctorId);
     if (!selectedDoctor) return;
 
+    // Simulate outcome calculation
+    const distance = (Math.random() * 5 + 1).toFixed(1);
+    
     const newAppointment: Appointment = {
       id: Date.now().toString(),
       doctorId: selectedDoctor.id,
@@ -25,11 +37,22 @@ const AppointmentManager: React.FC = () => {
       date: formData.date,
       time: formData.time,
       status: 'upcoming',
+      patientLocation: { 
+        lat: userCoords?.lat || 37.7749, 
+        lng: userCoords?.lng || -122.4194, 
+        address: formData.departureAddress 
+      },
+      outcomeMetrics: {
+        distanceKm: parseFloat(distance),
+        travelTimeMin: Math.round(parseFloat(distance) * 4),
+        healthGainScore: 70 + Math.floor(Math.random() * 30),
+        predictedRecoveryBoost: 'Optimization of treatment plan based on latest diagnostic tools available at the facility.'
+      }
     };
 
     setAppointments(prev => [newAppointment, ...prev]);
     setIsBooking(false);
-    setFormData({ doctorId: '', date: '', time: '' });
+    setFormData({ doctorId: '', date: '', time: '', departureAddress: 'Current Location' });
   };
 
   const getStatusStyle = (status: string) => {
@@ -46,7 +69,7 @@ const AppointmentManager: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">Appointments</h2>
-          <p className="text-slate-500">View and manage your scheduled medical visits.</p>
+          <p className="text-slate-500">Plan your visits with integrated logistics and health vectors.</p>
         </div>
         <button 
           onClick={() => setIsBooking(true)}
@@ -63,8 +86,8 @@ const AppointmentManager: React.FC = () => {
         <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
           <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div>
-              <h3 className="text-xl font-bold text-slate-800">Book New Appointment</h3>
-              <p className="text-sm text-slate-500">Choose your provider and preferred time slot.</p>
+              <h3 className="text-xl font-bold text-slate-800">New Logistics Booking</h3>
+              <p className="text-sm text-slate-500">We'll calculate the shortest route and health vector automatically.</p>
             </div>
             <button 
               onClick={() => setIsBooking(false)}
@@ -78,7 +101,7 @@ const AppointmentManager: React.FC = () => {
 
           <form onSubmit={handleBookAppointment} className="p-8 space-y-6">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Select Specialist</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Select Provider</label>
               <div className="grid grid-cols-1 gap-3">
                 {MOCK_DOCTORS.map(doctor => (
                   <label 
@@ -90,17 +113,17 @@ const AppointmentManager: React.FC = () => {
                     }`}
                   >
                     <input 
-                      type="radio" 
-                      name="doctor" 
-                      value={doctor.id}
-                      required
-                      className="hidden"
+                      type="radio" name="doctor" value={doctor.id} required className="hidden"
                       onChange={() => setFormData({...formData, doctorId: doctor.id})}
                     />
                     <img src={doctor.image} alt={doctor.name} className="w-12 h-12 rounded-full border-2 border-white shadow-sm" />
-                    <div>
+                    <div className="flex-1">
                       <p className="font-bold text-slate-800">{doctor.name}</p>
                       <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">{doctor.specialty}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">Location</p>
+                      <p className="text-xs text-slate-600 font-medium">San Francisco, CA</p>
                     </div>
                   </label>
                 ))}
@@ -109,49 +132,35 @@ const AppointmentManager: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Select Date</label>
-                <input 
-                  type="date" 
-                  required
-                  min={new Date().toISOString().split('T')[0]}
-                  value={formData.date}
-                  onChange={e => setFormData({...formData, date: e.target.value})}
-                  className="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                />
+                <label className="block text-sm font-medium text-slate-700 mb-1">Departure Location</label>
+                <div className="relative">
+                  <input 
+                    type="text" required
+                    value={formData.departureAddress}
+                    onChange={e => setFormData({...formData, departureAddress: e.target.value})}
+                    className="w-full bg-slate-50 border-slate-200 rounded-xl pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    placeholder="Enter starting address"
+                  />
+                  <svg className="w-5 h-5 text-emerald-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  </svg>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Preferred Time</label>
-                <select 
-                  required
-                  value={formData.time}
-                  onChange={e => setFormData({...formData, time: e.target.value})}
-                  className="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                >
-                  <option value="">Choose a time</option>
-                  <option value="09:00 AM">09:00 AM</option>
-                  <option value="10:00 AM">10:00 AM</option>
-                  <option value="11:30 AM">11:30 AM</option>
-                  <option value="01:00 PM">01:00 PM</option>
-                  <option value="02:30 PM">02:30 PM</option>
-                  <option value="04:00 PM">04:00 PM</option>
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Date</label>
+                  <input type="date" required className="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-2.5" onChange={e => setFormData({...formData, date: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Time</label>
+                  <input type="time" required className="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-2.5" onChange={e => setFormData({...formData, time: e.target.value})} />
+                </div>
               </div>
             </div>
 
             <div className="flex justify-end gap-4 pt-4 border-t border-slate-100">
-              <button 
-                type="button"
-                onClick={() => setIsBooking(false)}
-                className="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit"
-                className="px-8 py-2.5 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200"
-              >
-                Confirm Booking
-              </button>
+              <button type="button" onClick={() => setIsBooking(false)} className="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">Cancel</button>
+              <button type="submit" className="px-8 py-2.5 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200">Confirm visit</button>
             </div>
           </form>
         </div>
@@ -162,7 +171,7 @@ const AppointmentManager: React.FC = () => {
               <div className="flex items-start gap-4">
                 <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-emerald-500 border border-slate-100">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   </svg>
                 </div>
                 <div className="flex-1">
@@ -172,8 +181,14 @@ const AppointmentManager: React.FC = () => {
                       {app.status}
                     </span>
                   </div>
-                  <p className="text-emerald-600 text-sm font-medium mb-4">{app.specialty}</p>
+                  <p className="text-emerald-600 text-sm font-medium mb-2">{app.specialty}</p>
                   
+                  {app.patientLocation && (
+                    <div className="mb-4 flex items-center gap-2 text-xs text-slate-400">
+                      <span className="font-bold text-slate-600">From:</span> {app.patientLocation.address}
+                    </div>
+                  )}
+
                   <div className="flex flex-wrap gap-4 pt-4 border-t border-slate-50">
                     <div className="flex items-center gap-2 text-sm text-slate-500">
                       <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,43 +196,19 @@ const AppointmentManager: React.FC = () => {
                       </svg>
                       {new Date(app.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-500">
-                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {app.time}
-                    </div>
+                    {app.outcomeMetrics && (
+                      <div className="flex items-center gap-2 text-sm text-emerald-600 font-bold">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        {app.outcomeMetrics.healthGainScore}% Health Gain
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-              
-              {app.status === 'upcoming' && (
-                <div className="mt-6 pt-4 border-t border-slate-50 flex gap-3">
-                  <button className="flex-1 text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors py-2 uppercase tracking-wider">
-                    Reschedule
-                  </button>
-                  <button className="flex-1 text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors py-2 uppercase tracking-wider">
-                    Cancel visit
-                  </button>
-                </div>
-              )}
             </div>
           ))}
-
-          {appointments.length === 0 && (
-            <div className="lg:col-span-2 flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-slate-200 text-slate-400">
-              <svg className="w-16 h-16 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <p className="text-lg font-medium">No appointments found</p>
-              <button 
-                onClick={() => setIsBooking(true)}
-                className="mt-4 text-emerald-500 font-bold hover:underline"
-              >
-                Book your first visit
-              </button>
-            </div>
-          )}
         </div>
       )}
     </div>

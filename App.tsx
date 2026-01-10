@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -7,6 +6,8 @@ import ProfileManager from './components/ProfileManager';
 import AppointmentManager from './components/AppointmentManager';
 import HealthMap from './components/HealthMap';
 import TaxonomyExplorer from './components/TaxonomyExplorer';
+import OperationsManager from './components/OperationsManager';
+import OperationalOptimizer from './components/OperationalOptimizer';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -21,21 +22,21 @@ const App: React.FC = () => {
         return <ProfileManager />;
       case 'appointments':
         return <AppointmentManager />;
+      case 'operations':
+        return (
+          <div className="space-y-8 h-full">
+            <OperationsManager />
+            <div className="h-[400px] rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+               <HealthMap variant="operations" />
+            </div>
+          </div>
+        );
+      case 'strategy':
+        return <OperationalOptimizer />;
       case 'map':
         return <HealthMap />;
       case 'taxonomy':
         return <TaxonomyExplorer />;
-      case 'meds':
-        return (
-          <div className="flex flex-col items-center justify-center h-[60vh] text-slate-400 space-y-4">
-             <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center">
-                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                </svg>
-             </div>
-             <p className="text-lg font-medium">Medication tracking details coming soon</p>
-          </div>
-        );
       default:
         return <Dashboard />;
     }
@@ -57,7 +58,7 @@ const App: React.FC = () => {
               </div>
               <input 
                 type="text" 
-                placeholder="Search health records, doctors, or help..."
+                placeholder="Search resources, vehicles, or logistics..."
                 className="bg-transparent border-none focus:ring-0 text-slate-600 placeholder:text-slate-400 w-80 font-medium"
               />
             </div>
@@ -72,7 +73,7 @@ const App: React.FC = () => {
               <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
                 <div className="text-right">
                   <p className="text-sm font-bold text-slate-800">Alex Thompson</p>
-                  <p className="text-xs text-slate-500">Premium Member</p>
+                  <p className="text-xs text-slate-500">Logistics Admin</p>
                 </div>
                 <img 
                   src="https://picsum.photos/seed/alex/100/100" 

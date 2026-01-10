@@ -1,4 +1,3 @@
-
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -22,6 +21,13 @@ export interface Appointment {
   date: string;
   time: string;
   status: 'upcoming' | 'completed' | 'cancelled';
+  patientLocation?: { lat: number; lng: number; address: string };
+  outcomeMetrics?: {
+    distanceKm: number;
+    travelTimeMin: number;
+    healthGainScore: number;
+    predictedRecoveryBoost: string;
+  };
 }
 
 export interface Doctor {
@@ -29,6 +35,76 @@ export interface Doctor {
   name: string;
   specialty: string;
   image: string;
+  location: { lat: number; lng: number };
+  facilityId?: string;
+}
+
+export interface Facility {
+  id: string;
+  name: string;
+  type: 'hospital' | 'pharmacy' | 'logistics' | 'hub';
+  lat: number;
+  lng: number;
+  status?: string;
+  capacity?: number;
+  storageLevel?: number; // 0-100
+  connectedHubId?: string;
+}
+
+export interface InventoryItem {
+  id: string;
+  name: string;
+  category: 'pharma' | 'equipment' | 'supply';
+  quantity: number;
+  unit: string;
+  status: 'optimal' | 'low' | 'critical';
+  locationId: string;
+  lastRestocked: string;
+}
+
+export interface TransportVehicle {
+  id: string;
+  type: 'ambulance' | 'logistics-truck' | 'rapid-response';
+  plate: string;
+  status: 'available' | 'en-route' | 'maintenance';
+  lat: number;
+  lng: number;
+  currentPayload?: string;
+}
+
+export interface OperationalService {
+  id: string;
+  name: string;
+  facilityId: string;
+  status: 'active' | 'limited' | 'offline';
+  specialty: string;
+}
+
+export interface OptimizationScenario {
+  id: string;
+  name: string;
+  type: 'surge' | 'shortage' | 'disruption' | 'routine';
+  description: string;
+  variables: {
+    expectedInflow: number;
+    staffingLevel: number;
+    supplyChainStability: number;
+  };
+  aiRecommendations?: {
+    strategy: string;
+    resourceShift: string;
+    efficiencyGain: number;
+  };
+}
+
+export interface ServiceArea {
+  id: string;
+  name: string;
+  responsibleFacilityId: string;
+  populationServed: number;
+  criticalIncidentCount: number;
+  avgResponseTimeMin: number;
+  efficiencyScore: number;
 }
 
 export interface Medication {
@@ -54,6 +130,8 @@ export interface PatientProfile {
   email: string;
   phone: string;
   address: string;
+  lat: number;
+  lng: number;
   medicalHistory: string;
   allergies: string;
   insuranceProvider: string;
@@ -61,6 +139,8 @@ export interface PatientProfile {
   groupNumber: string;
   emergencyContact: EmergencyContact;
   isPrimary: boolean;
+  assignedDoctorId?: string;
+  incidentId?: string;
 }
 
 export interface HealthIncident {
@@ -73,9 +153,9 @@ export interface HealthIncident {
   description: string;
   detectedAt: string;
   cases: number;
-  originId?: string; // For lineage tracking
-  causalFactor?: string; // e.g., "Environmental", "Viral", "Water-borne"
-  taxonomyId?: string; // Link to knowledge taxonomy
+  originId?: string;
+  causalFactor?: string;
+  taxonomyId?: string;
 }
 
 export interface TaxonomyNode {
@@ -87,3 +167,5 @@ export interface TaxonomyNode {
   category: 'infectious' | 'environmental' | 'lifestyle' | 'genetic';
   icon?: string;
 }
+
+export type LineageRelationship = 'CARE' | 'SUPPLY' | 'SPREAD' | 'AFFECTED' | 'ASSIGNMENT' | 'KNOWLEDGE';

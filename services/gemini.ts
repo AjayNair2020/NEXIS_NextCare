@@ -1,5 +1,4 @@
-
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -33,6 +32,41 @@ export const getHealthAssistantResponse = async (prompt: string, history: { role
   }
 };
 
+export const optimizeHealthcareOperations = async (scenario: any, systemState: any) => {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-pro-preview",
+      contents: `Perform an Operational Optimization for the following scenario: ${JSON.stringify(scenario)}.
+      Current System state: ${JSON.stringify(systemState)}.
+      
+      Task: Provide a structured JSON response (schema provided) that optimizes resource distribution, identifies potential care bottlenecks, and suggests specific reallocations to improve service area coverage.`,
+      config: {
+        thinkingConfig: { thinkingBudget: 4000 },
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            strategy: { type: Type.STRING, description: "The overarching strategic response." },
+            resourceShift: { type: Type.STRING, description: "Specific inventory or personnel movements." },
+            efficiencyGain: { type: Type.NUMBER, description: "Predicted % improvement in response time or capacity." },
+            bottlenecks: { 
+              type: Type.ARRAY, 
+              items: { type: Type.STRING },
+              description: "Identified risk areas."
+            }
+          },
+          required: ["strategy", "resourceShift", "efficiencyGain", "bottlenecks"]
+        }
+      }
+    });
+
+    return JSON.parse(response.text.trim());
+  } catch (error) {
+    console.error("Optimization Analysis Error:", error);
+    return null;
+  }
+};
+
 export const getFacilityDetails = async (facilityName: string, location: { latitude: number, longitude: number }) => {
   try {
     const response = await ai.models.generateContent({
@@ -58,6 +92,50 @@ export const getFacilityDetails = async (facilityName: string, location: { latit
   } catch (error) {
     console.error("Maps Grounding Error:", error);
     return null;
+  }
+};
+
+export const analyzeFullSystemLineage = async (node: any, relatedNodes: any[]) => {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-pro-preview",
+      contents: `Explain the healthcare lineage for this target: ${JSON.stringify(node)}.
+      It is connected to these environmental factors: ${JSON.stringify(relatedNodes)}.
+      Explain:
+      1. Clinical Impact (how the doctor and facility affect health)
+      2. Logistic Resilience (how the supply hub secures their care)
+      3. Epidemiological Context (relationship to current disease incidents)
+      4. Knowledge Linkage (how this relates to medical taxonomy).`,
+      config: { thinkingConfig: { thinkingBudget: 2000 } }
+    });
+    return response.text;
+  } catch (error) {
+    console.error("Lineage Analysis Error:", error);
+    return "Lineage analysis failed.";
+  }
+};
+
+export const analyzeHealthOutcomeVector = async (appointmentData: any) => {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Analyze the Health Outcome Vector for this medical trip:
+      Appointment with ${appointmentData.doctorName} (${appointmentData.specialty})
+      Travel Distance: ${appointmentData.distanceKm}km
+      Estimated Time: ${appointmentData.travelTimeMin}min
+      
+      Predict:
+      1. Health Gain Score (0-100)
+      2. Clinical benefit explanation
+      3. Potential travel-induced stress mitigation advice.`,
+      config: {
+        temperature: 0.3,
+      }
+    });
+    return response.text;
+  } catch (error) {
+    console.error("Outcome Vector Analysis Error:", error);
+    return "Prediction currently unavailable.";
   }
 };
 
