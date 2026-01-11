@@ -61,7 +61,7 @@ const HealthAssistant: React.FC = () => {
     if (!hasKey) {
       alert("This tool requires high-fidelity generation which requires a paid GCP project API key. Please select one in the following dialog.");
       await (window as any).aistudio.openSelectKey();
-      return true; // Proceed assuming selection success
+      return true;
     }
     return true;
   };
@@ -222,9 +222,14 @@ const HealthAssistant: React.FC = () => {
     if (sessionRef.current) sessionRef.current.close();
   };
 
+  // Helper to detect if input might be anatomical or symptom-related
+  const isMedicalQuery = (text: string) => {
+    const medicalKeywords = ['pain', 'heart', 'brain', 'lung', 'anatomy', 'muscle', 'bone', 'skin', 'diagram', 'stomach', 'fever', 'symptom'];
+    return medicalKeywords.some(keyword => text.toLowerCase().includes(keyword));
+  };
+
   return (
     <div className="max-w-5xl mx-auto h-[calc(100vh-120px)] flex flex-col bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden relative">
-      {/* HUD Header */}
       <div className="p-5 border-b border-slate-100 bg-slate-900 text-white flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white ring-4 ring-emerald-500/20 shadow-lg shadow-emerald-500/30 animate-pulse">
@@ -320,8 +325,19 @@ const HealthAssistant: React.FC = () => {
         )}
       </div>
 
-      <div className="p-6 border-t border-slate-100 bg-white space-y-4">
-        {/* Clinical Toolkit Actions */}
+      <div className="p-6 border-t border-slate-100 bg-white space-y-4 relative">
+        {/* Contextual Illustration Suggestion */}
+        {input.length > 3 && isMedicalQuery(input) && (
+          <button 
+            type="button"
+            onClick={() => handleSend(undefined, true)}
+            className="absolute -top-14 left-1/2 -translate-x-1/2 flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-2xl animate-in slide-in-from-bottom-4 transition-all hover:scale-105 active:scale-95"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" /></svg>
+            Request AI Medical Illustration for "{input.slice(0, 15)}..."
+          </button>
+        )}
+
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
            <button 
             type="button"

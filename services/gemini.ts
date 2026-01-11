@@ -77,7 +77,6 @@ export const getHealthAssistantResponse = async (
       });
     }
 
-    // Use Pro for better reasoning and grounding capabilities
     const modelName = "gemini-3-pro-preview";
 
     const response = await ai.models.generateContent({
@@ -93,8 +92,7 @@ export const getHealthAssistantResponse = async (
         Guidelines:
         1. Be professional, clinical yet empathetic.
         2. Use search grounding for up-to-date facts.
-        3. If the user asks for a visual explanation, suggest generating a "Visual Anatomy Guide" or "Medical Animation".
-        4. Provide clear, bulleted information for complex topics.`,
+        3. Provide clear, bulleted information for complex topics.`,
         tools: [{ googleSearch: {} }],
         temperature: 0.2,
       },
@@ -102,7 +100,6 @@ export const getHealthAssistantResponse = async (
 
     const text = response.text || "I'm sorry, I couldn't process that request.";
     
-    // Extract Grounding Sources
     const sources: { uri: string; title: string }[] = [];
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
     if (chunks) {
@@ -168,6 +165,24 @@ export const optimizeHealthcareOperations = async (scenario: any, systemState: a
   }
 };
 
+export const getVehicleStatusReport = async (vehicle: any): Promise<string> => {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `Provide a concise clinical and logistics status report for this medical transport unit: ${JSON.stringify(vehicle)}. 
+      Mention the current payload importance and any operational risks based on its maintenance history.`,
+      config: {
+        temperature: 0.4,
+      },
+    });
+    return response.text || "Status report unavailable.";
+  } catch (error) {
+    console.error("Error getting vehicle report:", error);
+    return "Telemetry sync failed.";
+  }
+};
+
 export const getTaxonomyConceptExplanation = async (conceptName: string) => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -179,24 +194,6 @@ export const getTaxonomyConceptExplanation = async (conceptName: string) => {
     return response.text;
   } catch (error) {
     return "Explanation currently unavailable.";
-  }
-};
-
-export const getFacilityDetails = async (facility: any) => {
-  try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `Provide a detailed operational summary for the following medical facility: ${JSON.stringify(facility)}. 
-      Include capacity assessment and critical service highlights.`,
-      config: {
-        temperature: 0.4,
-      },
-    });
-    return response.text;
-  } catch (error) {
-    console.error("Error getting facility details:", error);
-    return "Facility details unavailable.";
   }
 };
 

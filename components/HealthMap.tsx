@@ -1,6 +1,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { getFacilityDetails, analyzeFullSystemLineage } from '../services/gemini';
+// Removed non-existent getFacilityDetails import as it's not defined in gemini.ts and unused here
+import { analyzeFullSystemLineage } from '../services/gemini';
 import { HealthIncident, Appointment, Facility, PatientProfile, Doctor, TransportVehicle, ServiceArea, InventoryItem } from '../types';
 import { MOCK_INCIDENTS, MOCK_APPOINTMENTS, MOCK_DOCTORS, MOCK_FACILITIES, MOCK_PATIENTS, MOCK_TAXONOMY, MOCK_TRANSPORTS, MOCK_SERVICE_AREAS, MOCK_INVENTORY } from '../constants';
 

@@ -14,6 +14,7 @@ import SupplyChainManager from './components/SupplyChainManager';
 import RBACManager from './components/RBACManager';
 import RightPanel from './components/RightPanel';
 import LandingPage from './components/LandingPage';
+import FloatingChatBot from './components/FloatingChatBot';
 import { User, DynamicRACI } from './types';
 import { INITIAL_RACI } from './constants';
 
@@ -202,6 +203,9 @@ const App: React.FC = () => {
         onTriggerAlert={triggerAlert}
         isDarkMode={isDarkMode}
       />
+
+      {/* Persistent AI Chatbot */}
+      <FloatingChatBot isDarkMode={isDarkMode} />
     </div>
   );
 };
