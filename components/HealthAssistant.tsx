@@ -32,7 +32,7 @@ const HealthAssistant: React.FC = () => {
     {
       id: '1',
       role: 'assistant',
-      content: 'Hello! I am NextCare AI (NEXIS Core). I am now connected to the global medical search network. How can I assist you with clinical insights today?',
+      content: 'Hello! I am NextCare AI (NEXIS Core). I am now connected to the global medical search network. How can I assist you with clinical insights or document analysis today?',
       timestamp: new Date(),
     }
   ]);
@@ -59,9 +59,8 @@ const HealthAssistant: React.FC = () => {
   const ensureApiKey = async () => {
     const hasKey = await (window as any).aistudio.hasSelectedApiKey();
     if (!hasKey) {
-      alert("This tool requires high-fidelity generation which requires a paid GCP project API key. Please select one in the following dialog.");
+      alert("NEXIS: High-fidelity reasoning requires an active clinical session key. Opening selector...");
       await (window as any).aistudio.openSelectKey();
-      return true;
     }
     return true;
   };
@@ -106,12 +105,15 @@ const HealthAssistant: React.FC = () => {
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Video Generation Error:", error);
+      if (error.message?.includes("Requested entity was not found")) {
+        await (window as any).aistudio.openSelectKey();
+      }
       const errorMessage: EnhancedMessage = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: 'I encountered an error generating the animation. If this was a billing error, please ensure you have selected a paid GCP project key.',
+        content: 'I encountered an error generating the animation. Please ensure you have selected a valid paid GCP project key with billing enabled.',
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -130,51 +132,73 @@ const HealthAssistant: React.FC = () => {
       await ensureApiKey();
     }
 
+    let finalInput = input;
+    if (attachedFile && !input.trim()) {
+      finalInput = `Please perform a detailed clinical review of the attached document (${attachedFile.name}). Summarize findings and highlight any anomalies.`;
+    } else if (isVisualGuideRequest) {
+      finalInput = `Provide an anatomical diagram and explanation for: ${input}`;
+    }
+
     const userMessage: EnhancedMessage = {
       id: Date.now().toString(),
       role: 'user',
-      content: isVisualGuideRequest ? `Anatomical diagram: ${input}` : input,
+      content: finalInput,
       timestamp: new Date(),
       file: attachedFile || undefined
     };
 
     setMessages(prev => [...prev, userMessage]);
-    const currentInput = input;
+    const currentInput = userMessage.content;
     const currentFile = attachedFile;
     
     setInput('');
     setAttachedFile(null);
     setIsLoading(true);
 
-    let illustrationUrl = null;
-    if (isVisualGuideRequest) {
-      illustrationUrl = await generateMedicalIllustration(currentInput);
+    try {
+      let illustrationUrl = null;
+      if (isVisualGuideRequest) {
+        illustrationUrl = await generateMedicalIllustration(currentInput);
+      }
+
+      // Gemini history MUST start with a user turn. Filter out the initial assistant greeting.
+      const history = messages
+        .filter(m => m.id !== '1') // Remove initial greeting
+        .map(msg => ({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.content }]
+        }));
+
+      const response: AssistantResponse = await getHealthAssistantResponse(
+        currentInput,
+        history,
+        currentFile ? { data: currentFile.data, mimeType: currentFile.mimeType } : undefined
+      );
+      
+      const assistantMessage: EnhancedMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: response.text,
+        timestamp: new Date(),
+        illustrationUrl: illustrationUrl || undefined,
+        sources: response.sources
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error: any) {
+      console.error("Health Assistant Error:", error);
+      if (error.message?.includes("Requested entity was not found")) {
+        await (window as any).aistudio.openSelectKey();
+      }
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: 'NEXIS Link interrupted. This usually happens if the API key is expired or lacks permissions. Please try re-selecting your key.',
+        timestamp: new Date()
+      }]);
+    } finally {
+      setIsLoading(false);
     }
-
-    const history = messages.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }]
-    }));
-
-    const response: AssistantResponse = await getHealthAssistantResponse(
-      isVisualGuideRequest 
-        ? `Explain the clinical context of ${currentInput}.`
-        : currentInput,
-      history,
-      currentFile ? { data: currentFile.data, mimeType: currentFile.mimeType } : undefined
-    );
-    
-    const assistantMessage: EnhancedMessage = {
-      id: (Date.now() + 1).toString(),
-      role: 'assistant',
-      content: response.text,
-      timestamp: new Date(),
-      illustrationUrl: illustrationUrl || undefined,
-      sources: response.sources
-    };
-
-    setMessages(prev => [...prev, assistantMessage]);
-    setIsLoading(false);
   };
 
   const toggleListening = async () => {
@@ -222,9 +246,8 @@ const HealthAssistant: React.FC = () => {
     if (sessionRef.current) sessionRef.current.close();
   };
 
-  // Helper to detect if input might be anatomical or symptom-related
   const isMedicalQuery = (text: string) => {
-    const medicalKeywords = ['pain', 'heart', 'brain', 'lung', 'anatomy', 'muscle', 'bone', 'skin', 'diagram', 'stomach', 'fever', 'symptom'];
+    const medicalKeywords = ['pain', 'heart', 'brain', 'lung', 'anatomy', 'muscle', 'bone', 'skin', 'diagram', 'stomach', 'fever', 'symptom', 'back', 'neck', 'headache', 'chest'];
     return medicalKeywords.some(keyword => text.toLowerCase().includes(keyword));
   };
 
@@ -256,6 +279,12 @@ const HealthAssistant: React.FC = () => {
                 {msg.role === 'user' ? <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg> : <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>}
               </div>
               <div className={`flex flex-col gap-3 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                {msg.file && (
+                  <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl text-[10px] font-black uppercase text-emerald-700 mb-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    Attached: {msg.file.name}
+                  </div>
+                )}
                 {msg.videoUrl && (
                   <div className="mb-2 p-2 bg-slate-900 rounded-[2.5rem] shadow-2xl border border-white/10 w-full max-w-lg">
                     <video src={msg.videoUrl} controls className="w-full rounded-3xl" />
@@ -320,13 +349,14 @@ const HealthAssistant: React.FC = () => {
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.4s]"></div>
             </div>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Scanning Global Medical Records...</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">
+              {attachedFile ? 'Analyzing Clinical Document...' : 'Scanning Global Medical Records...'}
+            </span>
           </div>
         )}
       </div>
 
       <div className="p-6 border-t border-slate-100 bg-white space-y-4 relative">
-        {/* Contextual Illustration Suggestion */}
         {input.length > 3 && isMedicalQuery(input) && (
           <button 
             type="button"
@@ -339,6 +369,14 @@ const HealthAssistant: React.FC = () => {
         )}
 
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+           <button 
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all whitespace-nowrap"
+           >
+             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+             Attach Lab Report
+           </button>
            <button 
             type="button"
             onClick={() => handleSend(undefined, true)}
@@ -357,25 +395,28 @@ const HealthAssistant: React.FC = () => {
              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
              Synthesize Medical Animation
            </button>
-           <button 
-            type="button"
-            onClick={() => setInput("Perform a detailed clinical triage for my current symptoms and suggest optimization vectors.")}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all whitespace-nowrap"
-           >
-             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-             Symptom Analyzer
-           </button>
         </div>
 
         <form onSubmit={handleSend} className="flex gap-3 items-center">
-          <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => {
-            const f = e.target.files?.[0]; if (f) {
-              const r = new FileReader(); r.onloadend = () => setAttachedFile({ data: (r.result as string).split(',')[1], mimeType: f.type, name: f.name, previewUrl: URL.createObjectURL(f)});
-              r.readAsDataURL(f);
-            }
-          }} />
-          <button type="button" onClick={() => fileInputRef.current?.click()} className="p-4 bg-slate-50 text-slate-500 rounded-2xl hover:bg-blue-50 transition-all border border-slate-100">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3" /></svg>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            className="hidden" 
+            accept=".pdf,image/*"
+            onChange={(e) => {
+              const f = e.target.files?.[0]; if (f) {
+                const r = new FileReader(); r.onloadend = () => setAttachedFile({ data: (r.result as string).split(',')[1], mimeType: f.type, name: f.name, previewUrl: URL.createObjectURL(f)});
+                r.readAsDataURL(f);
+              }
+            }} 
+          />
+          <button 
+            type="button" 
+            onClick={() => fileInputRef.current?.click()} 
+            title="Attach Health Documents (PDF/Images)"
+            className={`p-4 rounded-2xl transition-all border ${attachedFile ? 'bg-emerald-600 text-white border-emerald-700' : 'bg-slate-50 text-slate-500 border-slate-100 hover:bg-blue-50'}`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
           </button>
           <button type="button" onClick={toggleListening} className={`p-4 rounded-2xl transition-all border ${isListening ? 'bg-rose-500 text-white border-rose-600 animate-pulse' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7" /></svg>
@@ -384,20 +425,20 @@ const HealthAssistant: React.FC = () => {
             <input 
               value={input} 
               onChange={(e) => setInput(e.target.value)} 
-              placeholder="Describe symptoms for analysis or diagram request..." 
+              placeholder={attachedFile ? `Document ready: ${attachedFile.name}. Ask a question or press send...` : "Describe symptoms or upload a clinical record..."} 
               className="w-full bg-slate-50 border-slate-100 rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" 
             />
             {attachedFile && (
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 text-[10px] font-bold shadow-sm">
-                <span className="truncate max-w-[100px]">{attachedFile.name}</span>
-                <button type="button" onClick={() => setAttachedFile(null)} className="text-rose-500 hover:text-rose-700">×</button>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-emerald-500 text-white px-3 py-1.5 rounded-xl border border-emerald-600 text-[10px] font-black shadow-lg">
+                <span className="truncate max-w-[100px] uppercase tracking-tighter">Report Staged</span>
+                <button type="button" onClick={() => setAttachedFile(null)} className="text-white/80 hover:text-white">×</button>
               </div>
             )}
           </div>
           <div className="flex gap-2">
             <button 
               type="submit" 
-              disabled={!input.trim() && !attachedFile} 
+              disabled={(!input.trim() && !attachedFile) || isLoading} 
               className="p-4 bg-emerald-500 text-white rounded-2xl hover:bg-emerald-600 shadow-lg shadow-emerald-200 disabled:opacity-50 transition-all"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
@@ -407,11 +448,11 @@ const HealthAssistant: React.FC = () => {
         <div className="flex justify-center gap-6 mt-1">
           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
             <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
-            NEXIS Grounding Enabled
+            NEXIS Document OCR Active
           </span>
           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
             <div className="w-1 h-1 bg-blue-500 rounded-full"></div>
-            AES-256 Encrypted Tunnel
+            AES-256 Record Protection
           </span>
         </div>
       </div>

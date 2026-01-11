@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { getHealthAssistantResponse } from '../services/gemini';
+import { getHealthAssistantResponse, AssistantResponse } from '../services/gemini';
 import { Message } from '../types';
 
 interface FloatingChatBotProps {
@@ -44,12 +44,15 @@ const FloatingChatBot: React.FC<FloatingChatBotProps> = ({ isDarkMode }) => {
     setIsLoading(true);
 
     try {
-      const history = messages.map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content }]
-      }));
+      // Gemini history MUST start with a user turn. Filter out the initial greeting.
+      const history = messages
+        .filter(m => m.id !== 'init-1')
+        .map(msg => ({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.content }]
+        }));
 
-      const response = await getHealthAssistantResponse(currentInput, history);
+      const response: AssistantResponse = await getHealthAssistantResponse(currentInput, history);
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -59,8 +62,17 @@ const FloatingChatBot: React.FC<FloatingChatBotProps> = ({ isDarkMode }) => {
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("ChatBot Error:", error);
+      if (error.message?.includes("Requested entity was not found")) {
+        await (window as any).aistudio.openSelectKey();
+      }
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: 'I encountered an error connecting to NEXIS Core. Please verify your API key selection.',
+        timestamp: new Date()
+      }]);
     } finally {
       setIsLoading(false);
     }
