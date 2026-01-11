@@ -2,11 +2,11 @@
 import React, { useState } from 'react';
 import { MOCK_TAXONOMY, MOCK_INCIDENTS } from '../constants';
 import { TaxonomyNode, HealthIncident } from '../types';
-import { getTaxonomyConceptExplanation, generateMedicalIllustration } from '../services/gemini';
+import { getTaxonomyConceptExplanation, generateMedicalIllustration, TaxonomyInsight } from '../services/gemini';
 
 const TaxonomyExplorer: React.FC = () => {
   const [selectedNode, setSelectedNode] = useState<TaxonomyNode | null>(null);
-  const [explanation, setExplanation] = useState<string | null>(null);
+  const [insight, setInsight] = useState<TaxonomyInsight | null>(null);
   const [illustrationUrl, setIllustrationUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingImage, setLoadingImage] = useState(false);
@@ -23,16 +23,16 @@ const TaxonomyExplorer: React.FC = () => {
     setSelectedNode(node);
     setLoading(true);
     setLoadingImage(true);
-    setExplanation(null);
+    setInsight(null);
     setIllustrationUrl(null);
 
     // Fetch text explanation and image illustration concurrently
     const textPromise = getTaxonomyConceptExplanation(node.name);
     const imagePromise = generateMedicalIllustration(`Anatomy diagram or clinical illustration of ${node.name}`);
 
-    const [text, imageUrl] = await Promise.all([textPromise, imagePromise]);
+    const [data, imageUrl] = await Promise.all([textPromise, imagePromise]);
     
-    setExplanation(text);
+    setInsight(data);
     setIllustrationUrl(imageUrl);
     setLoading(false);
     setLoadingImage(false);
@@ -165,29 +165,74 @@ const TaxonomyExplorer: React.FC = () => {
                       <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                       AI Medical Insights
                     </h4>
+                    {insight && (
+                      <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 uppercase tracking-widest">
+                        Clinical Confidence 94%
+                      </span>
+                    )}
                   </div>
 
                   <div className={`transition-all duration-500 ${loading ? 'opacity-50' : 'opacity-100'}`}>
                     {loading ? (
-                      <div className="space-y-4 p-8 bg-slate-50 rounded-3xl border border-slate-100">
-                        <div className="h-4 bg-slate-200 rounded w-full animate-pulse"></div>
-                        <div className="h-4 bg-slate-200 rounded w-11/12 animate-pulse"></div>
-                        <div className="h-4 bg-slate-200 rounded w-4/5 animate-pulse"></div>
-                      </div>
-                    ) : explanation ? (
-                      <div className="group relative">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/10 to-blue-500/10 rounded-[2rem] blur opacity-25 group-hover:opacity-100 transition duration-1000"></div>
-                        <div className="relative bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm leading-relaxed">
-                          <div className="prose prose-slate max-w-none">
-                            {explanation.split('\n').filter(line => line.trim()).map((line, i) => (
-                              <p key={i} className="text-slate-600 mb-4 last:mb-0 text-sm md:text-base leading-7">
-                                {line}
-                              </p>
-                            ))}
-                          </div>
+                      <div className="space-y-6">
+                        <div className="p-8 bg-slate-50 rounded-3xl border border-slate-100 space-y-4">
+                          <div className="h-4 bg-slate-200 rounded w-full animate-pulse"></div>
+                          <div className="h-4 bg-slate-200 rounded w-11/12 animate-pulse"></div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          {[1,2,3,4].map(i => <div key={i} className="h-20 bg-slate-50 rounded-2xl animate-pulse"></div>)}
                         </div>
                       </div>
-                    ) : null}
+                    ) : insight ? (
+                      <div className="space-y-8">
+                        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm leading-relaxed">
+                          <h5 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Definition & Significance</h5>
+                          <p className="text-slate-700 text-sm md:text-base leading-7 font-medium mb-4">{insight.definition}</p>
+                          <p className="text-slate-500 text-sm italic">{insight.clinicalSignificance}</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                              <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <svg className="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                Clinical Presentation
+                              </h5>
+                              <ul className="space-y-2">
+                                {insight.symptoms.map((s, i) => (
+                                  <li key={i} className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                                    <div className="w-1 h-1 bg-rose-400 rounded-full"></div>
+                                    {s}
+                                  </li>
+                                ))}
+                              </ul>
+                           </div>
+                           <div className="bg-emerald-50/30 p-6 rounded-3xl border border-emerald-100">
+                              <h5 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                                Prevention Vectors
+                              </h5>
+                              <ul className="space-y-2">
+                                {insight.prevention.map((p, i) => (
+                                  <li key={i} className="flex items-center gap-2 text-xs font-bold text-emerald-800">
+                                    <div className="w-1 h-1 bg-emerald-400 rounded-full"></div>
+                                    {p}
+                                  </li>
+                                ))}
+                              </ul>
+                           </div>
+                        </div>
+
+                        <div className="bg-slate-900 p-8 rounded-[2rem] text-white shadow-xl relative overflow-hidden group">
+                           <div className="absolute -right-8 -top-8 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
+                           <h5 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-4">Core Clinical Protocol</h5>
+                           <p className="text-sm font-medium leading-relaxed italic opacity-90">"{insight.primaryProtocol}"</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-8 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                        <p className="text-sm text-slate-400 font-medium italic">NEXIS Intelligence Link Standby...</p>
+                      </div>
+                    )}
                   </div>
                 </section>
               </div>

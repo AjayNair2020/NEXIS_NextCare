@@ -183,17 +183,40 @@ export const getVehicleStatusReport = async (vehicle: any): Promise<string> => {
   }
 };
 
-export const getTaxonomyConceptExplanation = async (conceptName: string) => {
+export interface TaxonomyInsight {
+  definition: string;
+  clinicalSignificance: string;
+  symptoms: string[];
+  prevention: string[];
+  primaryProtocol: string;
+}
+
+export const getTaxonomyConceptExplanation = async (conceptName: string): Promise<TaxonomyInsight | null> => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Explain the medical concept: "${conceptName}".`,
-      config: { temperature: 0.4 }
+      contents: `Provide a comprehensive clinical intelligence summary for the medical concept: "${conceptName}".`,
+      config: { 
+        temperature: 0.4,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            definition: { type: Type.STRING, description: "A concise medical definition." },
+            clinicalSignificance: { type: Type.STRING, description: "Why this matters in a clinical context." },
+            symptoms: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Key clinical presentations." },
+            prevention: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Standard prevention measures." },
+            primaryProtocol: { type: Type.STRING, description: "Typical primary treatment or triage protocol." }
+          },
+          required: ["definition", "clinicalSignificance", "symptoms", "prevention", "primaryProtocol"]
+        }
+      }
     });
-    return response.text;
+    return JSON.parse(response.text?.trim() || "{}");
   } catch (error) {
-    return "Explanation currently unavailable.";
+    console.error("Taxonomy Insight Error:", error);
+    return null;
   }
 };
 
