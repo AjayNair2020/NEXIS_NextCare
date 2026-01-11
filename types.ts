@@ -23,7 +23,8 @@ export interface RACIMapping {
   taxonomy: Role[];
   profile: Role[];
   rbac: Role[];
-  planning: Role[]; // Added for ESRI Business Analyst module
+  planning: Role[];
+  supplyChain: Role[]; // Added for Healthcare Supply Chain module
 }
 
 export interface Message {
@@ -121,6 +122,24 @@ export interface InventoryItem {
   status: 'optimal' | 'low' | 'critical';
   locationId: string;
   lastRestocked: string;
+}
+
+export interface ProductionOrder {
+  id: string;
+  itemName: string;
+  quantity: number;
+  status: 'pending' | 'in-production' | 'completed' | 'shipped';
+  priority: 'low' | 'medium' | 'high';
+  eta: string;
+}
+
+export interface Fulfillment {
+  id: string;
+  orderId: string;
+  destinationFacilityId: string;
+  status: 'processing' | 'in-transit' | 'delivered';
+  shippedAt?: string;
+  carrier: string;
 }
 
 export interface MaintenanceLog {

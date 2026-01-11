@@ -67,7 +67,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
       renderTrafficLayer();
     }
 
-    if (viewMode === 'standard' || variant === 'dashboard') {
+    if (viewMode === 'standard' || variant === 'dashboard' || variant === 'operations') {
       MOCK_FACILITIES.forEach(f => renderFacility(f));
       MOCK_INCIDENTS.forEach(inc => renderIncident(inc));
       drawSupplyChain();
@@ -76,6 +76,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
     if (viewMode === 'ops' || variant === 'operations') {
       MOCK_FACILITIES.forEach(f => renderFacility(f));
       MOCK_TRANSPORTS.forEach(v => renderTransport(v));
+      // In operations/ops mode, we show both transport and supply chain
       drawSupplyChain();
     }
 
@@ -151,28 +152,31 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
   };
 
   const drawSupplyChain = () => {
+    // Primary Logistics Hub (Med Logistics)
     const logHub = MOCK_FACILITIES.find(f => f.id === 'log-1');
     if (!logHub) return;
 
     MOCK_FACILITIES.forEach(f => {
+      // Draw links from Med Logistics to any facility designated as its destination
       if (f.connectedHubId === 'log-1') {
         const inventoryAtHub = MOCK_INVENTORY.filter(inv => inv.locationId === 'log-1');
         const itemsList = inventoryAtHub.map(i => i.name).slice(0, 2).join(', ');
         
+        // Use a distinct style for supply chain: Dashed lines
         // @ts-ignore
         const supplyLine = L.polyline([[logHub.lat, logHub.lng], [f.lat, f.lng]], {
-          color: '#f59e0b',
-          weight: 3,
-          opacity: 0.6,
-          dashArray: '5, 10',
+          color: f.type === 'hospital' ? '#3b82f6' : f.type === 'pharmacy' ? '#06b6d4' : '#f59e0b',
+          weight: 4,
+          opacity: 0.7,
+          dashArray: '10, 15', // Visual representation as dashed lines
           className: 'supply-flow'
         }).addTo(mapInstance.current);
 
         supplyLine.bindPopup(`
           <div class="p-2">
-            <p class="text-[10px] font-black uppercase text-amber-600 mb-1">Critical Supply Flow</p>
-            <p class="text-xs font-bold text-slate-800">Route: ${logHub.name} → ${f.name}</p>
-            <p class="text-[9px] text-slate-500 mt-1">Transmitting: ${itemsList}...</p>
+            <p class="text-[10px] font-black uppercase text-amber-600 mb-1">Healthcare Supply Flow</p>
+            <p class="text-xs font-bold text-slate-800">${logHub.name} → ${f.name}</p>
+            <p class="text-[9px] text-slate-500 mt-1 italic">Active Fulfillment: ${itemsList}...</p>
           </div>
         `);
       }
@@ -220,14 +224,15 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
   };
 
   const renderFacility = (f: Facility) => {
-    const isLogistics = f.id === 'log-1';
+    const isLogistics = f.id === 'log-1' || f.type === 'logistics';
     const color = isLogistics ? '#f59e0b' : (f.type === 'hospital' ? '#3b82f6' : f.type === 'pharmacy' ? '#06b6d4' : '#f59e0b');
+    
     // @ts-ignore
     const marker = L.circleMarker([f.lat, f.lng], {
-      radius: f.type === 'hospital' ? 12 : 8,
+      radius: f.type === 'hospital' || isLogistics ? 12 : 8,
       fillColor: color,
-      color: isLogistics ? '#fff' : '#fff',
-      weight: isLogistics ? 4 : 2,
+      color: isLogistics ? '#000' : '#fff',
+      weight: isLogistics ? 3 : 2,
       opacity: 1,
       fillOpacity: 0.8
     }).addTo(mapInstance.current);
@@ -236,7 +241,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
       // @ts-ignore
       const labelIcon = L.divIcon({
         className: 'facility-label-container',
-        html: `<div class="bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded shadow-sm border border-slate-100 text-[9px] font-bold text-slate-700 whitespace-nowrap">${f.status} ${f.storageLevel ? `(${f.storageLevel}%)` : ''}</div>`,
+        html: `<div class="bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded shadow-sm border border-slate-100 text-[9px] font-bold text-slate-700 whitespace-nowrap">${f.name}</div>`,
         iconSize: [80, 20],
         iconAnchor: [40, -15]
       });

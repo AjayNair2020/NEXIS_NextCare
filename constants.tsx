@@ -1,5 +1,5 @@
 
-import { HealthMetric, Appointment, Medication, PatientProfile, Doctor, HealthIncident, TaxonomyNode, Facility, InventoryItem, TransportVehicle, OperationalService, ServiceArea, OptimizationScenario, SecurityProtocol, DynamicRACI, Role } from './types';
+import { HealthMetric, Appointment, Medication, PatientProfile, Doctor, HealthIncident, TaxonomyNode, Facility, InventoryItem, TransportVehicle, OperationalService, ServiceArea, OptimizationScenario, SecurityProtocol, DynamicRACI, Role, ProductionOrder, Fulfillment } from './types';
 
 export const SUPER_ADMIN_EMAIL = "ajaybinduarti@gmail.com";
 
@@ -13,7 +13,8 @@ export const INITIAL_RACI: DynamicRACI = {
   taxonomy: ['SUPER_ADMIN', 'CLINICAL_LEAD'],
   profile: ['SUPER_ADMIN', 'PATIENT'],
   rbac: ['SUPER_ADMIN'],
-  planning: ['SUPER_ADMIN', 'LOGISTICS_CHIEF']
+  planning: ['SUPER_ADMIN', 'LOGISTICS_CHIEF'],
+  supplyChain: ['SUPER_ADMIN', 'LOGISTICS_CHIEF']
 };
 
 export const MOCK_FACILITIES: Facility[] = [
@@ -23,6 +24,17 @@ export const MOCK_FACILITIES: Facility[] = [
   { id: 'fac-4', name: 'Mission Health Clinic', type: 'hospital', lat: 37.7599, lng: -122.4148, status: 'Nominal', storageLevel: 90, connectedHubId: 'log-1' },
   { id: 'log-1', name: 'Bay Area Med Logistics', type: 'logistics', lat: 37.7831, lng: -122.4182, status: 'Full Stock', storageLevel: 95 },
   { id: 'log-2', name: 'South SF Supply Hub', type: 'logistics', lat: 37.7411, lng: -122.3965, status: 'Emergency Protocol', storageLevel: 30 },
+];
+
+export const MOCK_PRODUCTION_ORDERS: ProductionOrder[] = [
+  { id: 'po-1', itemName: 'Surgical Masks (Box/50)', quantity: 500, status: 'in-production', priority: 'high', eta: '2023-11-02' },
+  { id: 'po-2', itemName: 'Vaccine Coolers', quantity: 20, status: 'pending', priority: 'medium', eta: '2023-11-10' },
+  { id: 'po-3', itemName: 'Nitrile Gloves (XL)', quantity: 1200, status: 'completed', priority: 'low', eta: '2023-10-25' },
+];
+
+export const MOCK_FULFILLMENTS: Fulfillment[] = [
+  { id: 'ff-1', orderId: 'po-3', destinationFacilityId: 'fac-1', status: 'in-transit', carrier: 'FedEx Health', shippedAt: '2023-10-24' },
+  { id: 'ff-2', orderId: 'po-4', destinationFacilityId: 'fac-3', status: 'processing', carrier: 'Internal Fleet' },
 ];
 
 export const MOCK_SERVICE_AREAS: ServiceArea[] = [
