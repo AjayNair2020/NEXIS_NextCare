@@ -20,7 +20,7 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [raciConfig, setRaciConfig] = useState<DynamicRACI>(INITIAL_RACI);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  // Fixed: mainScrollRef should allow null to be compatible with RightPanelProps
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const mainScrollRef = useRef<HTMLElement | null>(null);
   const [isAlertActive, setIsAlertActive] = useState(false);
 
@@ -73,7 +73,7 @@ const App: React.FC = () => {
 
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard isDarkMode={isDarkMode} />;
       case 'assistant':
         return <HealthAssistant />;
       case 'profile':
@@ -98,7 +98,7 @@ const App: React.FC = () => {
       case 'rbac':
         return <RBACManager raciConfig={raciConfig} onUpdateRACI={setRaciConfig} />;
       default:
-        return <Dashboard />;
+        return <Dashboard isDarkMode={isDarkMode} />;
     }
   };
 
@@ -111,12 +111,14 @@ const App: React.FC = () => {
         onLogout={handleLogout} 
         raciConfig={raciConfig}
         isDarkMode={isDarkMode}
+        isCollapsed={isSidebarCollapsed}
+        setIsCollapsed={setIsSidebarCollapsed}
       />
       
       {/* Main Workspace */}
       <main 
         ref={mainScrollRef}
-        className="flex-1 ml-64 mr-80 p-8 h-screen overflow-y-auto custom-scrollbar relative"
+        className={`flex-1 ${isSidebarCollapsed ? 'ml-20' : 'ml-64'} mr-80 p-8 h-screen overflow-y-auto custom-scrollbar relative transition-all duration-500`}
       >
         {isAlertActive && (
           <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-top duration-300">

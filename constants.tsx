@@ -320,5 +320,37 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
       healthGainScore: 85,
       predictedRecoveryBoost: 'Optimization of treatment plan based on latest diagnostic tools available at the facility.'
     }
+  },
+  {
+    id: '2',
+    doctorId: 'd2',
+    doctorName: 'Dr. Michael Chen',
+    specialty: 'General Physician',
+    date: '2023-10-24',
+    time: '01:15 PM',
+    status: 'upcoming',
+    patientLocation: { lat: 37.7558, lng: -122.4047, address: 'ZSFG Area' },
+    outcomeMetrics: {
+      distanceKm: 1.2,
+      travelTimeMin: 5,
+      healthGainScore: 92,
+      predictedRecoveryBoost: 'Routine monitoring and symptom validation.'
+    }
+  },
+  {
+    id: '3',
+    doctorId: 'd4',
+    doctorName: 'Dr. James Wilson',
+    specialty: 'Neurologist',
+    date: '2023-10-25',
+    time: '09:00 AM',
+    status: 'upcoming',
+    patientLocation: { lat: 37.7749, lng: -122.4194, address: 'Home (Mission St)' },
+    outcomeMetrics: {
+      distanceKm: 3.5,
+      travelTimeMin: 12,
+      healthGainScore: 78,
+      predictedRecoveryBoost: 'Advanced brain-map synthesis and cognitive assessment.'
+    }
   }
 ];
