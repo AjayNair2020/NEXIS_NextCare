@@ -125,17 +125,9 @@ const SupplyChainManager: React.FC<SupplyChainManagerProps> = ({ isDarkMode }) =
             ))}
           </div>
           
-          <div className={`lg:col-span-1 rounded-[2.5rem] border shadow-sm overflow-hidden min-h-[400px] relative transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-             <div className="absolute top-6 left-6 z-[20] bg-white/90 backdrop-blur px-4 py-2 rounded-xl shadow-lg border border-slate-100">
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Network Live Flow</p>
-               <p className="text-sm font-bold text-slate-800">Logistics Hubs</p>
-             </div>
-             <HealthMap variant="operations" />
-          </div>
-
-          <div className={`lg:col-span-2 rounded-[2.5rem] border shadow-sm p-8 transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+          <div className={`lg:col-span-3 rounded-[2.5rem] border shadow-sm p-8 transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
              <h3 className="text-xl font-bold mb-8 transition-colors">Demand vs. Fulfillment Velocity</h3>
-             <div className="h-64">
+             <div className="h-80">
                <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={PERFORMANCE_DATA}>
                     <defs>
@@ -311,6 +303,21 @@ const SupplyChainManager: React.FC<SupplyChainManagerProps> = ({ isDarkMode }) =
           </div>
         </div>
       )}
+
+      {/* Network View Map - Moved to Bottom */}
+      <div className={`rounded-[3rem] border shadow-sm overflow-hidden h-[500px] relative transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+        <div className="absolute top-8 left-8 z-[20] flex flex-col gap-2">
+           <div className="bg-white/90 backdrop-blur px-6 py-3 rounded-2xl shadow-2xl border border-slate-100">
+             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">LogiCore Spatial Intelligence</p>
+             <h3 className="text-sm font-black text-slate-800 uppercase italic">Live Network Flow Visualization</h3>
+           </div>
+           <div className="flex gap-2">
+              <span className="px-3 py-1.5 bg-emerald-500 text-white rounded-xl text-[8px] font-black uppercase tracking-widest shadow-lg">94% Fleet Efficiency</span>
+              <span className="px-3 py-1.5 bg-blue-600 text-white rounded-xl text-[8px] font-black uppercase tracking-widest shadow-lg">12 Active Hubs</span>
+           </div>
+        </div>
+        <HealthMap variant="operations" />
+      </div>
 
       {selectedVehicle && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">

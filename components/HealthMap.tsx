@@ -401,10 +401,31 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!searchQuery) return;
-    const found = MOCK_FACILITIES.find(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    if (found && mapInstance.current) {
-      mapInstance.current.setView([found.lat, found.lng], 15);
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return;
+
+    // Search Facilities by Name or Type
+    const foundFacility = MOCK_FACILITIES.find(f => 
+      f.name.toLowerCase().includes(q) || f.type.toLowerCase().includes(q)
+    );
+    
+    // Search Incidents by Type or Description
+    const foundIncident = MOCK_INCIDENTS.find(i => 
+      i.type.toLowerCase().includes(q) || i.description.toLowerCase().includes(q)
+    );
+
+    const target = foundFacility || foundIncident;
+
+    if (target && mapInstance.current) {
+      mapInstance.current.setView([target.lat, target.lng], 15);
+      if ('name' in target) { // Type check for Facility
+        handleNodeClick(target, 'FACILITY');
+      } else { // It's an Incident
+        handleNodeClick(target, 'INCIDENT');
+      }
+      setSearchQuery(''); // Clear search on success
+    } else {
+      alert(`NEXIS: No location matches for "${searchQuery}" in current sector.`);
     }
   };
 
@@ -455,9 +476,9 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Traffic</span>
                     <button 
                     onClick={() => setShowTraffic(!showTraffic)}
-                    className={`w-8 h-4 rounded-full relative transition-colors ${showTraffic ? 'bg-blue-600' : 'bg-slate-200'}`}
+                    className={`w-9 h-5 rounded-full relative transition-colors ${showTraffic ? 'bg-blue-600' : 'bg-slate-300'}`}
                     >
-                    <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${showTraffic ? 'left-4.5' : 'left-0.5'}`}></div>
+                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${showTraffic ? 'translate-x-5' : 'translate-x-1'}`}></div>
                     </button>
                 </div>
                </>
@@ -491,15 +512,15 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
           )}
 
           {variant !== 'optimizer' && variant !== 'journey' && (
-            <form onSubmit={handleSearch} className="absolute right-6 top-6 z-[1000] w-64">
-              <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-100 flex items-center px-4 py-1">
-                  <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <form onSubmit={handleSearch} className="absolute right-6 top-6 z-[1000] w-72">
+              <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-100 flex items-center px-4 py-1.5 transition-all focus-within:ring-2 focus-within:ring-blue-500/20">
+                  <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                   <input 
                     type="text" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Locate Facility..." 
-                    className="bg-transparent border-none focus:ring-0 text-xs text-slate-600 placeholder:text-slate-400 w-full ml-2"
+                    placeholder="Locate Facility, Incident, or Type..." 
+                    className="bg-transparent border-none focus:ring-0 text-xs font-bold text-slate-700 placeholder:text-slate-400 placeholder:font-medium w-full ml-2"
                   />
               </div>
             </form>
@@ -558,7 +579,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg ${
                   selectedNode.nodeType === 'FACILITY' ? 'bg-blue-500' : (selectedNode.severity === 'critical' ? 'bg-red-900' : 'bg-rose-500')
                 }`}>
-                  {selectedNode.name?.charAt(0) || 'L'}
+                  {selectedNode.name?.charAt(0) || selectedNode.type?.charAt(0) || 'L'}
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-800 leading-tight">
