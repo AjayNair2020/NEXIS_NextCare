@@ -76,7 +76,6 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
     if (viewMode === 'ops' || variant === 'operations') {
       MOCK_FACILITIES.forEach(f => renderFacility(f));
       MOCK_TRANSPORTS.forEach(v => renderTransport(v));
-      // In operations/ops mode, we show both transport and supply chain
       drawSupplyChain();
     }
 
@@ -117,7 +116,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
       fillOpacity: 1
     }).addTo(mapInstance.current).bindPopup(`<b>Destination: ${doctor.name}</b><br>${doctor.specialty}`);
 
-    // Journey Path (Animated Gradient-like effect)
+    // Journey Path
     // @ts-ignore
     const path = L.polyline([patientPos, doctorPos], {
       color: '#3b82f6',
@@ -126,7 +125,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
       className: 'journey-path-line'
     }).addTo(mapInstance.current);
 
-    // Outcome Vector Visualization (Spatial "Health Gain" radius at destination)
+    // Outcome Vector Visualization
     if (app.outcomeMetrics) {
       // @ts-ignore
       L.circle(doctorPos, {
@@ -146,39 +145,46 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
       `);
     }
 
-    // Zoom to fit both
     // @ts-ignore
     mapInstance.current.fitBounds([patientPos, doctorPos], { padding: [50, 50] });
   };
 
   const drawSupplyChain = () => {
-    // Primary Logistics Hub (Med Logistics)
+    // SF Med Logistics Hub is the primary source
     const logHub = MOCK_FACILITIES.find(f => f.id === 'log-1');
     if (!logHub) return;
 
     MOCK_FACILITIES.forEach(f => {
-      // Draw links from Med Logistics to any facility designated as its destination
+      // Show flow to facilities connected to the logistics hub
       if (f.connectedHubId === 'log-1') {
         const inventoryAtHub = MOCK_INVENTORY.filter(inv => inv.locationId === 'log-1');
-        const itemsList = inventoryAtHub.map(i => i.name).slice(0, 2).join(', ');
+        const itemsList = inventoryAtHub.map(i => i.name).slice(0, 3).join(', ');
         
-        // Use a distinct style for supply chain: Dashed lines
+        // Color coding for flow type
+        const flowColor = f.type === 'hospital' ? '#3b82f6' : f.type === 'pharmacy' ? '#06b6d4' : '#f59e0b';
+        
         // @ts-ignore
         const supplyLine = L.polyline([[logHub.lat, logHub.lng], [f.lat, f.lng]], {
-          color: f.type === 'hospital' ? '#3b82f6' : f.type === 'pharmacy' ? '#06b6d4' : '#f59e0b',
+          color: flowColor,
           weight: 4,
-          opacity: 0.7,
-          dashArray: '10, 15', // Visual representation as dashed lines
-          className: 'supply-flow'
+          opacity: 0.6,
+          dashArray: '12, 12', 
+          className: 'supply-flow' // CSS animation "flow" defined in index.html
         }).addTo(mapInstance.current);
 
         supplyLine.bindPopup(`
-          <div class="p-2">
-            <p class="text-[10px] font-black uppercase text-amber-600 mb-1">Healthcare Supply Flow</p>
-            <p class="text-xs font-bold text-slate-800">${logHub.name} → ${f.name}</p>
-            <p class="text-[9px] text-slate-500 mt-1 italic">Active Fulfillment: ${itemsList}...</p>
+          <div class="p-3 bg-white rounded-xl shadow-lg border border-slate-100 min-w-[200px]">
+            <div class="flex items-center gap-2 mb-2">
+               <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+               <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Active Supply Vector</p>
+            </div>
+            <p class="text-xs font-bold text-slate-800 mb-2">${logHub.name} <span class="text-slate-400 mx-1">→</span> ${f.name}</p>
+            <div class="pt-2 border-t border-slate-50">
+               <p class="text-[9px] font-black text-emerald-600 uppercase tracking-tighter mb-1">Payload Priority Items:</p>
+               <p class="text-[10px] text-slate-500 leading-relaxed italic">${itemsList}...</p>
+            </div>
           </div>
-        `);
+        `, { className: 'custom-popup' });
       }
     });
   };

@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { MOCK_INVENTORY, MOCK_PRODUCTION_ORDERS, MOCK_FULFILLMENTS, MOCK_FACILITIES } from '../constants';
 import HealthMap from './HealthMap';
 
@@ -7,13 +8,23 @@ interface SupplyChainManagerProps {
   isDarkMode?: boolean;
 }
 
+const DEMAND_FORECAST_DATA = [
+  { name: 'Mon', demand: 400, stock: 600 },
+  { name: 'Tue', demand: 300, stock: 580 },
+  { name: 'Wed', demand: 500, stock: 550 },
+  { name: 'Thu', demand: 280, stock: 520 },
+  { name: 'Fri', demand: 590, stock: 650 },
+  { name: 'Sat', demand: 320, stock: 630 },
+  { name: 'Sun', demand: 210, stock: 600 },
+];
+
 const SupplyChainManager: React.FC<SupplyChainManagerProps> = ({ isDarkMode }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'kpi' | 'inventory' | 'production' | 'fulfillment'>('kpi');
+  const [activeSubTab, setActiveSubTab] = useState<'kpi' | 'inventory' | 'stock' | 'production' | 'fulfillment'>('kpi');
 
   const supplyChainStats = [
     { label: 'Total Value Managed', val: '$4.2M', unit: 'USD', trend: '+5.4%', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
     { label: 'Fulfillment Rate', val: '98.5%', unit: 'success', trend: '+0.2%', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
-    { label: 'Stockout Incidents', val: '2', unit: 'last 30d', trend: '-80%', icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' },
+    { label: 'Stock Stability', val: '94.2', unit: 'index', trend: 'Optimal', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
     { label: 'Active Shipments', val: '14', unit: 'units', trend: 'Nominal', icon: 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4' },
   ];
 
@@ -22,14 +33,14 @@ const SupplyChainManager: React.FC<SupplyChainManagerProps> = ({ isDarkMode }) =
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h2 className={`text-3xl font-bold tracking-tight transition-colors ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>Healthcare Supply Chain</h2>
-          <p className="text-slate-500 font-medium">End-to-end logistics, production tracking, and fulfillment lifecycle.</p>
+          <p className="text-slate-500 font-medium italic">Integrated Logistics Command (NEXIS LogiCore)</p>
         </div>
-        <div className="flex bg-white/50 backdrop-blur-md p-1 rounded-2xl border border-slate-100 shadow-sm">
-          {['kpi', 'inventory', 'production', 'fulfillment'].map((tab) => (
+        <div className="flex bg-white/50 backdrop-blur-md p-1 rounded-2xl border border-slate-100 shadow-sm overflow-x-auto">
+          {['kpi', 'inventory', 'stock', 'production', 'fulfillment'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveSubTab(tab as any)}
-              className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+              className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                 activeSubTab === tab 
                   ? 'bg-emerald-600 text-white shadow-lg' 
                   : 'text-slate-500 hover:text-emerald-600'
@@ -65,36 +76,54 @@ const SupplyChainManager: React.FC<SupplyChainManagerProps> = ({ isDarkMode }) =
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className={`rounded-[2.5rem] border shadow-sm overflow-hidden h-[400px] relative transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className={`lg:col-span-2 rounded-[2.5rem] border shadow-sm p-8 transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+               <div className="flex justify-between items-center mb-8">
+                  <div>
+                    <h3 className="text-xl font-bold">Demand vs. Stock Velocity</h3>
+                    <p className="text-xs text-slate-400 font-bold uppercase">7-Day Predictive Cycle</p>
+                  </div>
+                  <div className="flex gap-4">
+                     <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">Stock</span>
+                     </div>
+                     <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">Demand</span>
+                     </div>
+                  </div>
+               </div>
+               <div className="h-64">
+                 <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={DEMAND_FORECAST_DATA}>
+                      <defs>
+                        <linearGradient id="colorStock" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="colorDemand" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: '700'}} />
+                      <YAxis hide />
+                      <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px', backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }} />
+                      <Area type="monotone" dataKey="stock" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorStock)" />
+                      <Area type="monotone" dataKey="demand" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorDemand)" />
+                    </AreaChart>
+                 </ResponsiveContainer>
+               </div>
+            </div>
+            
+            <div className={`rounded-[2.5rem] border shadow-sm overflow-hidden h-full relative transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
                <div className="absolute top-6 left-6 z-[20] bg-white/90 backdrop-blur px-4 py-2 rounded-xl shadow-lg border border-slate-100">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Network Visualization</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Network Live Flow</p>
                   <p className="text-sm font-bold text-slate-800">Regional Med Logistics Hubs</p>
                </div>
                <HealthMap variant="operations" />
-            </div>
-            <div className={`rounded-[2.5rem] border shadow-sm p-8 transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-               <h3 className="text-xl font-bold mb-6">Optimization Vector: San Francisco</h3>
-               <div className="space-y-6">
-                 {[
-                   { label: 'Route Efficiency', val: 94, color: 'bg-emerald-500' },
-                   { label: 'Hub Utilization', val: 78, color: 'bg-blue-500' },
-                   { label: 'Stock Buffer Health', val: 88, color: 'bg-amber-500' },
-                 ].map((bar, i) => (
-                   <div key={i}>
-                      <div className="flex justify-between mb-2">
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{bar.label}</span>
-                        <span className="text-xs font-black text-slate-800">{bar.val}%</span>
-                      </div>
-                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div className={`${bar.color} h-full transition-all duration-1000`} style={{ width: `${bar.val}%` }}></div>
-                      </div>
-                   </div>
-                 ))}
-               </div>
-               <div className="mt-10 p-6 bg-emerald-50 rounded-3xl border border-emerald-100">
-                  <p className="text-xs font-medium text-emerald-800 italic">"AI predicts a supply chain latency reduction of 12% if the Med Logistics dispatch node is shifted 2.4km East."</p>
-               </div>
             </div>
           </div>
         </>
@@ -102,12 +131,16 @@ const SupplyChainManager: React.FC<SupplyChainManagerProps> = ({ isDarkMode }) =
 
       {activeSubTab === 'inventory' && (
         <div className={`bg-white rounded-[2.5rem] border shadow-sm overflow-hidden transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+          <div className="p-8 border-b border-slate-50 flex justify-between items-center">
+             <h3 className="text-xl font-bold">Facility Resource Inventory</h3>
+             <button className="px-4 py-2 bg-slate-50 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-100 hover:bg-slate-100 transition-all">Export Manifest</button>
+          </div>
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-100">
               <tr>
                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Item Name</th>
                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Location</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Level</th>
+                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Supply Health</th>
                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
               </tr>
             </thead>
@@ -118,7 +151,7 @@ const SupplyChainManager: React.FC<SupplyChainManagerProps> = ({ isDarkMode }) =
                     <p className="font-bold text-slate-800">{item.name}</p>
                     <p className="text-[10px] text-slate-400 uppercase font-medium">{item.category}</p>
                   </td>
-                  <td className="px-8 py-6 text-sm text-slate-600">
+                  <td className="px-8 py-6 text-sm text-slate-600 font-medium">
                     {MOCK_FACILITIES.find(f => f.id === item.locationId)?.name || 'Central Stock'}
                   </td>
                   <td className="px-8 py-6">
@@ -138,6 +171,33 @@ const SupplyChainManager: React.FC<SupplyChainManagerProps> = ({ isDarkMode }) =
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {activeSubTab === 'stock' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-4">
+           {MOCK_INVENTORY.map(item => (
+             <div key={item.id} className={`p-8 rounded-[2.5rem] border shadow-sm transition-all hover:shadow-xl ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                <div className="flex justify-between items-start mb-6">
+                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${item.category === 'pharma' ? 'bg-blue-50 text-blue-500' : 'bg-emerald-50 text-emerald-500'}`}>
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                   </div>
+                   <div className={`text-[10px] font-black uppercase px-3 py-1 rounded-full ${item.status === 'optimal' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                     {item.status}
+                   </div>
+                </div>
+                <h4 className="text-xl font-bold text-slate-800 mb-1">{item.name}</h4>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">{item.category} • SKU-{item.id.toUpperCase()}</p>
+                <div className="flex items-baseline gap-2 mb-8">
+                   <span className="text-4xl font-black text-slate-900">{item.quantity}</span>
+                   <span className="text-sm font-bold text-slate-400 uppercase tracking-tighter">{item.unit}</span>
+                </div>
+                <div className="pt-6 border-t border-slate-50">
+                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Global Restock Status</p>
+                   <p className="text-xs font-bold text-slate-700">Last restock: {item.lastRestocked}</p>
+                </div>
+             </div>
+           ))}
         </div>
       )}
 
@@ -199,11 +259,14 @@ const SupplyChainManager: React.FC<SupplyChainManagerProps> = ({ isDarkMode }) =
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Network Sync</p>
                   <div className="flex items-center gap-2">
                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div>
-                     <span className="text-xs font-bold text-emerald-600 uppercase">Live Tracking</span>
+                     <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Live Tracking</span>
                   </div>
                </div>
             </div>
           ))}
+          <div className="p-12 text-center border-2 border-dashed border-slate-100 rounded-[3rem]">
+             <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Waiting for incoming fulfillment requests...</p>
+          </div>
         </div>
       )}
     </div>
