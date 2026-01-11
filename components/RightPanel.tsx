@@ -1,0 +1,252 @@
+
+import React, { useState, useRef, useEffect } from 'react';
+import { MOCK_APPOINTMENTS, MOCK_MEDICATIONS, MOCK_HEALTH_METRICS } from '../constants';
+import { getHealthAssistantResponse } from '../services/gemini';
+import { Message, User } from '../types';
+
+interface RightPanelProps {
+  user: User;
+  setActiveTab: (tab: string) => void;
+  mainScrollRef: React.RefObject<HTMLElement | null>;
+  onTriggerAlert: () => void;
+}
+
+const RightPanel: React.FC<RightPanelProps> = ({ user, setActiveTab, mainScrollRef, onTriggerAlert }) => {
+  const [messages, setMessages] = useState<Message[]>([
+    { id: '1', role: 'assistant', content: 'Quick insight: Fleet efficiency up 12%. Need a health briefing?', timestamp: new Date() }
+  ]);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isTyping) return;
+
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: input, timestamp: new Date() };
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setIsTyping(true);
+
+    const history = messages.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.content }] }));
+    const response = await getHealthAssistantResponse(input, history);
+    
+    // Fix: Use response.text as content is a string and response is an AssistantResponse object.
+    setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: response.text, timestamp: new Date() }]);
+    setIsTyping(false);
+  };
+
+  // Tactical Rail Functions
+  const handleSync = () => {
+    setIsSyncing(true);
+    showToast("Syncing clinical records...");
+    setTimeout(() => {
+      setIsSyncing(false);
+      showToast("System synchronization complete.");
+    }, 2000);
+  };
+
+  const handleTriage = () => {
+    setActiveTab('assistant');
+    showToast("Contextual AI Triage active.");
+  };
+
+  const handleTop = () => {
+    if (mainScrollRef.current) {
+      mainScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleAlert = () => {
+    onTriggerAlert();
+    showToast("Broadcast alert triggered.");
+  };
+
+  const isPatient = user.role === 'PATIENT';
+  const isLogistics = user.role === 'LOGISTICS_CHIEF' || user.role === 'SUPER_ADMIN';
+
+  return (
+    <div className="w-80 bg-white border-l border-slate-200 h-screen fixed right-0 top-0 flex flex-col z-10 shadow-[-10px_0_30px_rgba(0,0,0,0.02)]">
+      {/* Toast Overlay */}
+      {toast && (
+        <div className="absolute top-4 -left-64 w-60 z-[200] animate-in fade-in slide-in-from-right duration-300">
+           <div className="bg-slate-900/90 backdrop-blur-xl text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-white/10 shadow-2xl">
+              {toast}
+           </div>
+        </div>
+      )}
+
+      {/* Functional Action Rail */}
+      <div className="absolute -left-12 top-1/2 -translate-y-1/2 flex flex-col gap-3">
+        {[
+          { icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15', label: 'Sync', onClick: handleSync, color: 'hover:text-emerald-500' },
+          { icon: 'M13 10V3L4 14h7v7l9-11h-7z', label: 'Triage', onClick: handleTriage, color: 'hover:text-blue-500' },
+          { icon: 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', label: 'Alert', onClick: handleAlert, color: 'hover:text-rose-500' },
+          { icon: 'M5 10l7-7m0 0l7 7m-7-7v18', label: 'Top', onClick: handleTop, color: 'hover:text-indigo-500' }
+        ].map((action, i) => (
+          <button 
+            key={i}
+            onClick={action.onClick}
+            className={`w-10 h-10 bg-white border border-slate-200 rounded-xl shadow-lg flex items-center justify-center text-slate-400 ${action.color} hover:scale-110 active:scale-95 transition-all group relative`}
+          >
+            <svg className={`w-5 h-5 ${isSyncing && action.label === 'Sync' ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={action.icon} />
+            </svg>
+            <span className="absolute right-full mr-3 px-2 py-1 bg-slate-800 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none uppercase tracking-widest">
+              {action.label}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+        {/* KPI Command Station */}
+        {isLogistics && (
+          <section className={`${isSyncing ? 'animate-pulse opacity-60' : ''} transition-all duration-500`}>
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Operational Pulse</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 group hover:border-emerald-200 transition-colors">
+                <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Load</p>
+                <p className="text-xl font-black text-slate-800">82%</p>
+                <div className="w-full bg-slate-200 h-1 rounded-full mt-2">
+                  <div className="bg-emerald-500 h-full w-[82%] rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)] transition-all duration-1000"></div>
+                </div>
+              </div>
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 group hover:border-blue-200 transition-colors">
+                <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Fleet</p>
+                <p className="text-xl font-black text-slate-800">14/15</p>
+                <div className="w-full bg-slate-200 h-1 rounded-full mt-2">
+                  <div className="bg-blue-500 h-full w-[94%] rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all duration-1000"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Intelligence Stream (Mini Assistant) */}
+        {!isLogistics && (
+          <section className="bg-slate-900 rounded-[2rem] p-5 shadow-xl shadow-slate-200 relative overflow-hidden flex flex-col h-80 border border-slate-800">
+            <div className="absolute top-0 right-0 p-4">
+               <div className="flex gap-1">
+                  {[1,2,3].map(i => <div key={i} className="w-1 h-1 bg-emerald-400/50 rounded-full animate-pulse" style={{ animationDelay: `${i*200}ms` }}></div>)}
+               </div>
+            </div>
+            <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-4">AI Link</h4>
+            
+            <div ref={scrollRef} className="flex-1 overflow-y-auto mb-4 space-y-3 pr-2 scrollbar-hide">
+              {messages.map(m => (
+                <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`px-3 py-2 rounded-xl text-[11px] max-w-[90%] leading-relaxed ${
+                    m.role === 'user' ? 'bg-emerald-500 text-white font-medium' : 'bg-slate-800 text-slate-300 border border-slate-700'
+                  }`}>
+                    {m.content}
+                  </div>
+                </div>
+              ))}
+              {isTyping && <div className="text-[10px] text-emerald-400/50 italic animate-pulse">Syncing thoughts...</div>}
+            </div>
+
+            <form onSubmit={handleSend} className="relative mt-auto">
+              <input 
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                placeholder="Query NextCare..." 
+                className="w-full bg-slate-800 border-none rounded-xl py-2.5 px-4 text-xs text-white placeholder:text-slate-600 focus:ring-1 focus:ring-emerald-500/50 transition-all"
+              />
+              <button type="submit" className="absolute right-2 top-1.5 p-1 text-emerald-500 hover:text-white transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+              </button>
+            </form>
+          </section>
+        )}
+
+        {/* Schedule & Tasks */}
+        <section className="space-y-6">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Upcoming</h3>
+              <button 
+                onClick={() => setActiveTab('appointments')}
+                className="text-[9px] font-bold text-emerald-600 hover:underline uppercase"
+              >
+                Full Agenda
+              </button>
+            </div>
+            <div className="space-y-3">
+              {MOCK_APPOINTMENTS.slice(0, 2).map(app => (
+                <div key={app.id} className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all group">
+                   <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center">
+                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      </div>
+                      <div className="flex-1">
+                         <p className="text-xs font-bold text-slate-800 truncate">{app.doctorName}</p>
+                         <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{app.specialty}</p>
+                      </div>
+                   </div>
+                   <div className="flex justify-between items-center text-[10px] font-medium text-slate-500 mt-3 pt-3 border-t border-slate-50">
+                      <span>{app.date}</span>
+                      <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold">{app.time}</span>
+                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+             <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Medications</h3>
+              <span className="text-[9px] font-bold text-rose-500 animate-pulse uppercase">2 Pending</span>
+            </div>
+            <div className="space-y-3">
+              {MOCK_MEDICATIONS.map(med => (
+                <div key={med.id} className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl group hover:bg-white hover:shadow-sm transition-all">
+                   <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                   </div>
+                   <div className="flex-1">
+                      <p className="text-[11px] font-bold text-slate-700">{med.name}</p>
+                      <p className="text-[9px] text-slate-400 font-medium">Next: {med.nextDose}</p>
+                   </div>
+                   <button 
+                    onClick={() => setActiveTab('profile')}
+                    className="w-6 h-6 rounded-full border border-slate-200 flex items-center justify-center hover:bg-emerald-500 hover:border-emerald-500 hover:text-white transition-all"
+                   >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                   </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div className="p-6 border-t border-slate-100 bg-slate-50/50">
+        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-4">
+           <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-emerald-600 ring-4 ring-emerald-500/10">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+           </div>
+           <div>
+              <p className="text-[9px] font-black uppercase text-emerald-800 tracking-widest mb-0.5">System Integrity</p>
+              <p className="text-xs font-bold text-emerald-600">Active RACI Protocol</p>
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default RightPanel;

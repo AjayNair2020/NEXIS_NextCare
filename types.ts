@@ -1,3 +1,30 @@
+
+export type Role = 'SUPER_ADMIN' | 'CLINICAL_LEAD' | 'LOGISTICS_CHIEF' | 'PATIENT';
+
+export interface User {
+  id: string;
+  email: string;
+  fullName: string;
+  role: Role;
+  avatar?: string;
+}
+
+export type DynamicRACI = {
+  [key in keyof RACIMapping]: Role[];
+};
+
+export interface RACIMapping {
+  dashboard: Role[];
+  assistant: Role[];
+  appointments: Role[];
+  operations: Role[];
+  strategy: Role[];
+  map: Role[];
+  taxonomy: Role[];
+  profile: Role[];
+  rbac: Role[]; // Added for system management
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -11,6 +38,31 @@ export interface HealthMetric {
   bloodPressure: number;
   steps: number;
   sleep: number;
+}
+
+export interface AdherenceLog {
+  timestamp: string;
+  status: 'taken' | 'skipped' | 'late';
+}
+
+export interface Medication {
+  id: string;
+  name: string;
+  dosage: string;
+  frequency: string;
+  remaining: number;
+  totalQuantity: number;
+  nextDose: string;
+  adherenceHistory?: AdherenceLog[];
+  category?: 'maintenance' | 'acute' | 'supplement';
+}
+
+export interface SecurityProtocol {
+  id: string;
+  name: string;
+  status: 'active' | 'certified' | 'monitoring';
+  description: string;
+  standard: 'HIPAA' | 'PII' | 'AES-256' | 'GDPR' | 'SOC2';
 }
 
 export interface Appointment {
@@ -62,6 +114,12 @@ export interface InventoryItem {
   lastRestocked: string;
 }
 
+export interface MaintenanceLog {
+  date: string;
+  description: string;
+  technician: string;
+}
+
 export interface TransportVehicle {
   id: string;
   type: 'ambulance' | 'logistics-truck' | 'rapid-response';
@@ -70,6 +128,9 @@ export interface TransportVehicle {
   lat: number;
   lng: number;
   currentPayload?: string;
+  driverName?: string;
+  lastMaintenanceDate?: string;
+  maintenanceLogs?: MaintenanceLog[];
 }
 
 export interface OperationalService {
@@ -108,14 +169,6 @@ export interface ServiceArea {
   lat: number;
   lng: number;
   radius: number; // in meters
-}
-
-export interface Medication {
-  id: string;
-  name: string;
-  dosage: string;
-  frequency: string;
-  remaining: number;
 }
 
 export interface EmergencyContact {

@@ -3,6 +3,7 @@
   "description": "A premium AI-powered healthcare platform for personalized patient insights, symptom analysis, and health monitoring.",
   "requestFramePermissions": [
     "microphone",
-    "geolocation"
+    "geolocation",
+    "camera"
   ]
 }

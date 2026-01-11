@@ -1,11 +1,16 @@
+
 import React from 'react';
+import { User, DynamicRACI } from '../types';
 
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  user: User;
+  onLogout: () => void;
+  raciConfig: DynamicRACI;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogout, raciConfig }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
     { id: 'assistant', label: 'AI Assistant', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' },
@@ -15,43 +20,62 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
     { id: 'map', label: 'Health Map', icon: 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7' },
     { id: 'taxonomy', label: 'Knowledge Hub', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
     { id: 'profile', label: 'Health Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+    { id: 'rbac', label: 'RBAC Admin', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
   ];
 
+  // Filter menu items by permission from Dynamic RACI
+  const filteredItems = menuItems.filter(item => {
+    const roles = raciConfig[item.id as keyof DynamicRACI];
+    return roles?.includes(user.role);
+  });
+
   return (
-    <div className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen fixed left-0 top-0 z-10">
+    <div className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen fixed left-0 top-0 z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
       <div className="p-6 flex items-center gap-3">
-        <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+        <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 ring-4 ring-emerald-500/10">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
         </div>
-        <h1 className="text-xl font-bold text-slate-800 tracking-tight">NextCare</h1>
+        <h1 className="text-xl font-black text-slate-800 tracking-tighter uppercase italic">NextCare</h1>
       </div>
 
-      <nav className="flex-1 px-4 py-4 space-y-1">
-        {menuItems.map((item) => (
+      <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
+        {filteredItems.map((item) => (
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${
               activeTab === item.id
-                ? 'bg-emerald-50 text-emerald-700 font-semibold'
+                ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm'
                 : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
             }`}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-            </svg>
-            {item.label}
+            <div className={`p-1.5 rounded-lg transition-colors ${activeTab === item.id ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600'}`}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+              </svg>
+            </div>
+            <span className="text-sm">{item.label}</span>
           </button>
         ))}
       </nav>
 
       <div className="p-4 border-t border-slate-100">
-        <div className="bg-slate-50 rounded-xl p-4">
-          <p className="text-xs text-slate-400 mb-1">Signed in as</p>
-          <p className="text-sm font-medium text-slate-700">Alex Thompson</p>
-          <button className="text-xs text-emerald-600 mt-2 hover:underline">Log Out</button>
+        <div className="bg-slate-50 rounded-[1.5rem] p-5 border border-slate-100 relative overflow-hidden group shadow-inner">
+          <div className="absolute -right-2 -bottom-2 w-12 h-12 bg-emerald-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Authenticated as</p>
+          <p className="text-sm font-bold text-slate-800 truncate">{user.fullName}</p>
+          <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">{user.role.replace('_', ' ')}</p>
+          <button 
+            onClick={onLogout}
+            className="text-[10px] font-black text-rose-500 mt-4 hover:underline uppercase tracking-widest flex items-center gap-1.5 group/logout"
+          >
+            Terminate Session
+            <svg className="w-3 h-3 group-hover/logout:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>

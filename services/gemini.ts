@@ -1,180 +1,200 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-export const getHealthAssistantResponse = async (prompt: string, history: { role: string; parts: { text: string }[] }[]) => {
+export const generateMedicalIllustration = async (prompt: string) => {
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: 'gemini-3-pro-image-preview',
+      contents: {
+        parts: [
+          {
+            text: `Create a professional, high-fidelity 1K medical illustration or detailed anatomy diagram of: ${prompt}. 
+            Style: Clinical, clean white background, accurate anatomical labels if possible, similar to a premium medical textbook (Netter's style). 
+            Color palette: Professional medical blues, emerald greens, and soft highlights. 
+            Avoid gore; focus on educational clarity and sharp anatomical precision.`,
+          },
+        ],
+      },
+      config: {
+        imageConfig: {
+          aspectRatio: "1:1",
+          imageSize: "1K"
+        }
+      }
+    });
+
+    for (const part of response.candidates[0].content.parts) {
+      if (part.inlineData) {
+        return `data:image/png;base64,${part.inlineData.data}`;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error("Image Generation Error:", error);
+    return null;
+  }
+};
+
+export const startMedicalAnimationGeneration = async (prompt: string) => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  let operation = await ai.models.generateVideos({
+    model: 'veo-3.1-fast-generate-preview',
+    prompt: `A professional 3D medical animation of: ${prompt}. Cinematic lighting, smooth motion, high anatomical detail, educational style, clean background.`,
+    config: {
+      numberOfVideos: 1,
+      resolution: '720p',
+      aspectRatio: '16:9'
+    }
+  });
+  return operation;
+};
+
+export const pollVideoOperation = async (operation: any) => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  return await ai.operations.getVideosOperation({ operation: operation });
+};
+
+export interface AssistantResponse {
+  text: string;
+  sources?: { uri: string; title: string }[];
+}
+
+export const getHealthAssistantResponse = async (
+  prompt: string, 
+  history: { role: string; parts: any[] }[],
+  file?: { data: string; mimeType: string }
+): Promise<AssistantResponse> => {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const parts: any[] = [{ text: prompt }];
+    if (file) {
+      parts.push({
+        inlineData: {
+          data: file.data,
+          mimeType: file.mimeType
+        }
+      });
+    }
+
+    // Use Pro for better reasoning and grounding capabilities
+    const modelName = "gemini-3-pro-preview";
+
+    const response = await ai.models.generateContent({
+      model: modelName,
       contents: [
         ...history,
-        { role: 'user', parts: [{ text: prompt }] }
+        { role: 'user', parts: parts }
       ],
       config: {
-        systemInstruction: `You are NextCare AI, an advanced, professional, and empathetic medical assistant. 
-        Your goal is to help users understand health concepts, analyze potential symptoms, and provide wellness advice.
+        systemInstruction: `You are NextCare AI (NEXIS Core), an advanced, global healthcare intelligence. 
+        You have access to real-time search data to answer queries about current medical news, trends, and global health events.
         
-        CRITICAL RULES:
-        1. Always include a disclaimer that you are an AI and not a substitute for professional medical advice.
-        2. Be concise but informative.
-        3. If symptoms sound severe (chest pain, stroke symptoms, etc.), urge the user to seek emergency medical care immediately.
-        4. Use supportive, empathetic language.
-        5. Format your response with clear headings or bullet points if necessary.`,
-        temperature: 0.7,
-        topP: 0.9,
+        Guidelines:
+        1. Be professional, clinical yet empathetic.
+        2. Use search grounding for up-to-date facts.
+        3. If the user asks for a visual explanation, suggest generating a "Visual Anatomy Guide" or "Medical Animation".
+        4. Provide clear, bulleted information for complex topics.`,
+        tools: [{ googleSearch: {} }],
+        temperature: 0.2,
       },
     });
 
-    return response.text || "I'm sorry, I couldn't process that request.";
+    const text = response.text || "I'm sorry, I couldn't process that request.";
+    
+    // Extract Grounding Sources
+    const sources: { uri: string; title: string }[] = [];
+    const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+    if (chunks) {
+      chunks.forEach((chunk: any) => {
+        if (chunk.web) {
+          sources.push({ uri: chunk.web.uri, title: chunk.web.title });
+        }
+      });
+    }
+
+    return { text, sources: sources.length > 0 ? sources : undefined };
   } catch (error) {
     console.error("Gemini API Error:", error);
-    return "I encountered an error while trying to assist you. Please try again in a moment.";
+    return { text: "I encountered an error while trying to assist you. Please try again in a moment." };
   }
 };
 
 export const optimizeHealthcareOperations = async (scenario: any, systemState: any) => {
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",
-      contents: `Perform an Operational Optimization for the following scenario: ${JSON.stringify(scenario)}.
-      Current System state: ${JSON.stringify(systemState)}.
-      
-      Task: Provide a structured JSON response (schema provided) that optimizes resource distribution, identifies potential care bottlenecks, and suggests specific reallocations to improve service area coverage.`,
+      contents: `Perform an Operational Optimization for: ${JSON.stringify(scenario)}. Current system state: ${JSON.stringify(systemState)}`,
       config: {
         thinkingConfig: { thinkingBudget: 4000 },
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            strategy: { type: Type.STRING, description: "The overarching strategic response." },
-            resourceShift: { type: Type.STRING, description: "Specific inventory or personnel movements." },
-            efficiencyGain: { type: Type.NUMBER, description: "Predicted % improvement in response time or capacity." },
-            bottlenecks: { 
-              type: Type.ARRAY, 
-              items: { type: Type.STRING },
-              description: "Identified risk areas."
-            }
+            strategy: { type: Type.STRING },
+            resourceShift: { type: Type.STRING },
+            efficiencyGain: { type: Type.NUMBER },
+            bottlenecks: { type: Type.ARRAY, items: { type: Type.STRING } }
           },
           required: ["strategy", "resourceShift", "efficiencyGain", "bottlenecks"]
         }
       }
     });
 
-    return JSON.parse(response.text.trim());
+    return JSON.parse(response.text?.trim() || "{}");
   } catch (error) {
-    console.error("Optimization Analysis Error:", error);
+    console.error("Optimization Error:", error);
     return null;
-  }
-};
-
-export const getFacilityDetails = async (facilityName: string, location: { latitude: number, longitude: number }) => {
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: `Find details about ${facilityName} including its address, services, and current patient reviews.`,
-      config: {
-        tools: [{ googleMaps: {} }],
-        toolConfig: {
-          retrievalConfig: {
-            latLng: {
-              latitude: location.latitude,
-              longitude: location.longitude
-            }
-          }
-        }
-      },
-    });
-
-    return {
-      text: response.text,
-      grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks
-    };
-  } catch (error) {
-    console.error("Maps Grounding Error:", error);
-    return null;
-  }
-};
-
-export const analyzeFullSystemLineage = async (node: any, relatedNodes: any[]) => {
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
-      contents: `Explain the healthcare lineage for this target: ${JSON.stringify(node)}.
-      It is connected to these environmental factors: ${JSON.stringify(relatedNodes)}.
-      Explain:
-      1. Clinical Impact (how the doctor and facility affect health)
-      2. Logistic Resilience (how the supply hub secures their care)
-      3. Epidemiological Context (relationship to current disease incidents)
-      4. Knowledge Linkage (how this relates to medical taxonomy).`,
-      config: { thinkingConfig: { thinkingBudget: 2000 } }
-    });
-    return response.text;
-  } catch (error) {
-    console.error("Lineage Analysis Error:", error);
-    return "Lineage analysis failed.";
-  }
-};
-
-export const analyzeHealthOutcomeVector = async (appointmentData: any) => {
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Analyze the Health Outcome Vector for this medical trip:
-      Appointment with ${appointmentData.doctorName} (${appointmentData.specialty})
-      Travel Distance: ${appointmentData.distanceKm}km
-      Estimated Time: ${appointmentData.travelTimeMin}min
-      
-      Predict:
-      1. Health Gain Score (0-100)
-      2. Clinical benefit explanation
-      3. Potential travel-induced stress mitigation advice.`,
-      config: {
-        temperature: 0.3,
-      }
-    });
-    return response.text;
-  } catch (error) {
-    console.error("Outcome Vector Analysis Error:", error);
-    return "Prediction currently unavailable.";
-  }
-};
-
-export const analyzeIncidentLineage = async (incident: any, lineage: any[]) => {
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Analyze this health incident spread: ${JSON.stringify(incident)}.
-      The known lineage is: ${JSON.stringify(lineage)}.
-      Explain the likely causal factors for this spread, the speed of transmission, and recommended public health actions for this specific cluster.`,
-      config: {
-        temperature: 0.5,
-      }
-    });
-    return response.text;
-  } catch (error) {
-    console.error("Lineage Analysis Error:", error);
-    return "Lineage analysis currently unavailable.";
   }
 };
 
 export const getTaxonomyConceptExplanation = async (conceptName: string) => {
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Explain the medical concept: "${conceptName}". 
-      Include: 
-      1. Clinical definition
-      2. Key symptoms
-      3. Common transmission or causal routes
-      4. Prevention strategies.
-      Keep it professional and concise.`,
-      config: {
-        temperature: 0.4,
-      }
+      contents: `Explain the medical concept: "${conceptName}".`,
+      config: { temperature: 0.4 }
     });
     return response.text;
   } catch (error) {
-    console.error("Taxonomy Explanation Error:", error);
     return "Explanation currently unavailable.";
+  }
+};
+
+export const getFacilityDetails = async (facility: any) => {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `Provide a detailed operational summary for the following medical facility: ${JSON.stringify(facility)}. 
+      Include capacity assessment and critical service highlights.`,
+      config: {
+        temperature: 0.4,
+      },
+    });
+    return response.text;
+  } catch (error) {
+    console.error("Error getting facility details:", error);
+    return "Facility details unavailable.";
+  }
+};
+
+export const analyzeFullSystemLineage = async (node: any, relatedNodes: any[]) => {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `Analyze the operational lineage and systemic impact for this healthcare node: ${JSON.stringify(node)}. 
+      Related context: ${JSON.stringify(relatedNodes)}.
+      Provide a concise summary of its role in the care network, potential bottlenecks, and optimization vectors.`,
+      config: {
+        temperature: 0.4,
+      },
+    });
+    return response.text;
+  } catch (error) {
+    console.error("Error analyzing system lineage:", error);
+    return "Analysis currently unavailable.";
   }
 };

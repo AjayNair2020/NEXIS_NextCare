@@ -1,4 +1,19 @@
-import { HealthMetric, Appointment, Medication, PatientProfile, Doctor, HealthIncident, TaxonomyNode, Facility, InventoryItem, TransportVehicle, OperationalService, ServiceArea, OptimizationScenario } from './types';
+
+import { HealthMetric, Appointment, Medication, PatientProfile, Doctor, HealthIncident, TaxonomyNode, Facility, InventoryItem, TransportVehicle, OperationalService, ServiceArea, OptimizationScenario, SecurityProtocol, DynamicRACI, Role } from './types';
+
+export const SUPER_ADMIN_EMAIL = "ajaybinduarti@gmail.com";
+
+export const INITIAL_RACI: DynamicRACI = {
+  dashboard: ['SUPER_ADMIN', 'CLINICAL_LEAD', 'LOGISTICS_CHIEF', 'PATIENT'],
+  assistant: ['SUPER_ADMIN', 'CLINICAL_LEAD', 'PATIENT'],
+  appointments: ['SUPER_ADMIN', 'CLINICAL_LEAD', 'PATIENT'],
+  operations: ['SUPER_ADMIN', 'LOGISTICS_CHIEF'],
+  strategy: ['SUPER_ADMIN', 'CLINICAL_LEAD', 'LOGISTICS_CHIEF'],
+  map: ['SUPER_ADMIN', 'CLINICAL_LEAD', 'LOGISTICS_CHIEF'],
+  taxonomy: ['SUPER_ADMIN', 'CLINICAL_LEAD'],
+  profile: ['SUPER_ADMIN', 'PATIENT'],
+  rbac: ['SUPER_ADMIN']
+};
 
 export const MOCK_FACILITIES: Facility[] = [
   { id: 'fac-1', name: 'UCSF Medical Center', type: 'hospital', lat: 37.7631, lng: -122.4578, status: '92% Occupancy', capacity: 500, storageLevel: 85, connectedHubId: 'log-1' },
@@ -46,10 +61,60 @@ export const MOCK_INVENTORY: InventoryItem[] = [
 ];
 
 export const MOCK_TRANSPORTS: TransportVehicle[] = [
-  { id: 'v-1', type: 'ambulance', plate: 'MED-012', status: 'en-route', lat: 37.7680, lng: -122.4300, currentPayload: 'Critical Cardiac Patient' },
-  { id: 'v-2', type: 'ambulance', plate: 'MED-045', status: 'available', lat: 37.7558, lng: -122.4047 },
-  { id: 'v-3', type: 'logistics-truck', plate: 'LOG-772', status: 'available', lat: 37.7831, lng: -122.4182 },
-  { id: 'v-4', type: 'rapid-response', plate: 'RRP-003', status: 'maintenance', lat: 37.7411, lng: -122.3965 },
+  { 
+    id: 'v-1', 
+    type: 'ambulance', 
+    plate: 'MED-012', 
+    status: 'en-route', 
+    lat: 37.7680, 
+    lng: -122.4300, 
+    currentPayload: 'Critical Cardiac Patient',
+    driverName: 'Officer Marcus Wright',
+    lastMaintenanceDate: '2023-09-12',
+    maintenanceLogs: [
+      { date: '2023-09-12', description: 'Brake pad replacement and oil change.', technician: 'Robert S.' },
+      { date: '2023-06-05', description: 'Tire rotation and signal lighting check.', technician: 'Marcus K.' }
+    ]
+  },
+  { 
+    id: 'v-2', 
+    type: 'ambulance', 
+    plate: 'MED-045', 
+    status: 'available', 
+    lat: 37.7558, 
+    lng: -122.4047,
+    driverName: 'Nurse Elena Rodriguez',
+    lastMaintenanceDate: '2023-10-01',
+    maintenanceLogs: [
+      { date: '2023-10-01', description: 'Full medical inventory restock and sanitization.', technician: 'Hospital Team A' }
+    ]
+  },
+  { 
+    id: 'v-3', 
+    type: 'logistics-truck', 
+    plate: 'LOG-772', 
+    status: 'available', 
+    lat: 37.7831, 
+    lng: -122.4182,
+    driverName: 'David H. Thompson',
+    lastMaintenanceDate: '2023-08-20',
+    maintenanceLogs: [
+      { date: '2023-08-20', description: 'Engine diagnostic and transmission fluid flush.', technician: 'SF Fleet Service' }
+    ]
+  },
+  { 
+    id: 'v-4', 
+    type: 'rapid-response', 
+    plate: 'RRP-003', 
+    status: 'maintenance', 
+    lat: 37.7411, 
+    lng: -122.3965,
+    driverName: 'Technician Sarah Miller',
+    lastMaintenanceDate: '2023-10-18',
+    maintenanceLogs: [
+      { date: '2023-10-18', description: 'Emergency electrical system repair.', technician: 'Sarah Miller (Self)' }
+    ]
+  },
 ];
 
 export const MOCK_SERVICES: OperationalService[] = [
@@ -183,8 +248,60 @@ export const MOCK_HEALTH_METRICS: HealthMetric[] = [
 ];
 
 export const MOCK_MEDICATIONS: Medication[] = [
-  { id: 'm1', name: 'Lisinopril', dosage: '10mg', frequency: 'Once Daily', remaining: 14 },
-  { id: 'm2', name: 'Vitamin D3', dosage: '2000 IU', frequency: 'Every Morning', remaining: 45 },
+  { 
+    id: 'm1', 
+    name: 'Lisinopril', 
+    dosage: '10mg', 
+    frequency: 'Once Daily', 
+    remaining: 14, 
+    totalQuantity: 30, 
+    nextDose: '09:00 AM',
+    category: 'maintenance',
+    adherenceHistory: [
+      { timestamp: '2023-10-20T09:05:00', status: 'taken' },
+      { timestamp: '2023-10-21T09:12:00', status: 'taken' },
+      { timestamp: '2023-10-22T10:30:00', status: 'late' },
+    ]
+  },
+  { 
+    id: 'm2', 
+    name: 'Vitamin D3', 
+    dosage: '2000 IU', 
+    frequency: 'Every Morning', 
+    remaining: 45, 
+    totalQuantity: 60, 
+    nextDose: '08:30 AM',
+    category: 'supplement',
+    adherenceHistory: [
+      { timestamp: '2023-10-20T08:35:00', status: 'taken' },
+      { timestamp: '2023-10-21T08:32:00', status: 'taken' },
+      { timestamp: '2023-10-22T08:45:00', status: 'taken' },
+    ]
+  },
+];
+
+export const MOCK_SECURITY_PROTOCOLS: SecurityProtocol[] = [
+  { 
+    id: 'sec-1', 
+    name: 'HIPAA Compliance', 
+    status: 'certified', 
+    standard: 'HIPAA',
+    description: 'All Personal Health Information (PHI) is encrypted at rest and in transit.'
+  },
+  { 
+    id: 'sec-2', 
+    name: 'AES-256 Storage', 
+    status: 'active', 
+    standard: 'AES-256',
+    description: 'Military-grade encryption for local database and cloud sync.'
+  },
+  { 
+    id: 'sec-3', 
+    name: 'PII Shield', 
+    status: 'monitoring', 
+    standard: 'PII',
+    description: 'Strict access controls and audit logging for Personally Identifiable Information.'
+  },
 ];
 
 export const MOCK_APPOINTMENTS: Appointment[] = [
@@ -201,7 +318,7 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
       distanceKm: 4.2,
       travelTimeMin: 15,
       healthGainScore: 85,
-      predictedRecoveryBoost: 'Immediate optimization of treatment plan based on latest diagnostic tools available at the facility.'
+      predictedRecoveryBoost: 'Optimization of treatment plan based on latest diagnostic tools available at the facility.'
     }
   }
 ];
