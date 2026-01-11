@@ -8,9 +8,10 @@ interface SidebarProps {
   user: User;
   onLogout: () => void;
   raciConfig: DynamicRACI;
+  isDarkMode?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogout, raciConfig }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogout, raciConfig, isDarkMode }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
     { id: 'assistant', label: 'AI Assistant', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' },
@@ -30,14 +31,14 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
   });
 
   return (
-    <div className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen fixed left-0 top-0 z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+    <div className={`w-64 border-r flex flex-col h-screen fixed left-0 top-0 z-10 transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)]'}`}>
       <div className="p-6 flex items-center gap-3">
         <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 ring-4 ring-emerald-500/10">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
         </div>
-        <h1 className="text-xl font-black text-slate-800 tracking-tighter uppercase italic">NextCare</h1>
+        <h1 className={`text-xl font-black tracking-tighter uppercase italic transition-colors ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>NextCare</h1>
       </div>
 
       <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
@@ -47,11 +48,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
             onClick={() => setActiveTab(item.id)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${
               activeTab === item.id
-                ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm'
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                ? (isDarkMode ? 'bg-emerald-500/10 text-emerald-400 font-bold' : 'bg-emerald-50 text-emerald-700 font-bold shadow-sm')
+                : (isDarkMode ? 'text-slate-500 hover:bg-slate-800 hover:text-slate-300' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700')
             }`}
           >
-            <div className={`p-1.5 rounded-lg transition-colors ${activeTab === item.id ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600'}`}>
+            <div className={`p-1.5 rounded-lg transition-colors ${activeTab === item.id ? 'bg-emerald-500 text-white' : (isDarkMode ? 'bg-slate-800 text-slate-600 group-hover:bg-slate-700' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600')}`}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
               </svg>
@@ -61,11 +62,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
         ))}
       </nav>
 
-      <div className="p-4 border-t border-slate-100">
-        <div className="bg-slate-50 rounded-[1.5rem] p-5 border border-slate-100 relative overflow-hidden group shadow-inner">
+      <div className="p-4 border-t border-slate-100/10">
+        <div className={`rounded-[1.5rem] p-5 border relative overflow-hidden group shadow-inner transition-colors ${isDarkMode ? 'bg-slate-800/50 border-slate-800' : 'bg-slate-50 border-slate-100'}`}>
           <div className="absolute -right-2 -bottom-2 w-12 h-12 bg-emerald-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Authenticated as</p>
-          <p className="text-sm font-bold text-slate-800 truncate">{user.fullName}</p>
+          <p className={`text-sm font-bold truncate transition-colors ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{user.fullName}</p>
           <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">{user.role.replace('_', ' ')}</p>
           <button 
             onClick={onLogout}
