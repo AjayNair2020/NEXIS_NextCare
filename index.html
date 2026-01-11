@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,6 +45,33 @@
             70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
         }
+        /* Severity Pulse Animations */
+        @keyframes severity-low-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(234, 179, 8, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
+        }
+        @keyframes severity-medium-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.5); }
+            70% { box-shadow: 0 0 0 15px rgba(249, 115, 22, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+        }
+        @keyframes severity-high-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+            70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        @keyframes severity-critical-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(153, 27, 27, 0.7); }
+            50% { transform: scale(1.1); box-shadow: 0 0 0 25px rgba(153, 27, 27, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(153, 27, 27, 0); }
+        }
+
+        .severity-low { animation: severity-low-pulse 2.5s infinite; }
+        .severity-medium { animation: severity-medium-pulse 2s infinite; }
+        .severity-high { animation: severity-high-pulse 1.5s infinite; }
+        .severity-critical { animation: severity-critical-pulse 1s infinite; }
+
         .care-flow {
             stroke-dasharray: 8 8;
             animation: flow 20s linear infinite;

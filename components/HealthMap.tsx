@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { getFacilityDetails, analyzeFullSystemLineage } from '../services/gemini';
 import { HealthIncident, Appointment, Facility, PatientProfile, Doctor, TransportVehicle, ServiceArea, InventoryItem } from '../types';
@@ -253,8 +254,8 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
       className: 'transport-marker',
       html: `<div class="w-6 h-6 flex items-center justify-center rounded-lg shadow-md border-2 border-white" style="background-color: ${color}">
               <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1-1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1-1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
               </svg>
              </div>`,
       iconSize: [24, 24],
@@ -264,26 +265,39 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
     L.marker([v.lat, v.lng], { icon: vehicleIcon }).addTo(mapInstance.current).bindPopup(`<b>${v.plate}</b><br>${v.status}<br>${v.currentPayload || ''}`);
   };
 
+  const getSeverityConfig = (severity: string) => {
+    switch (severity) {
+      case 'low': return { color: '#eab308', class: 'severity-low' };
+      case 'medium': return { color: '#f97316', class: 'severity-medium' };
+      case 'high': return { color: '#ef4444', class: 'severity-high' };
+      case 'critical': return { color: '#991b1b', class: 'severity-critical' };
+      default: return { color: '#e11d48', class: 'severity-medium' };
+    }
+  };
+
   const renderIncident = (inc: HealthIncident) => {
-    const color = inc.severity === 'critical' ? '#be123c' : '#e11d48';
+    const config = getSeverityConfig(inc.severity);
     // @ts-ignore
     const marker = L.circleMarker([inc.lat, inc.lng], {
-      radius: 10 + (inc.cases / 15),
-      fillColor: color,
+      radius: 12 + (inc.cases / 12),
+      fillColor: config.color,
       color: '#fff',
-      weight: 2,
-      opacity: 0.6,
-      fillOpacity: 0.4,
-      className: 'incident-pulse'
+      weight: 3,
+      opacity: 0.8,
+      fillOpacity: 0.6,
+      className: config.class
     }).addTo(mapInstance.current);
 
-    if (variant === 'dashboard') {
+    if (variant === 'dashboard' || variant === 'standard') {
       // @ts-ignore
       const labelIcon = L.divIcon({
         className: 'incident-label-container',
-        html: `<div class="bg-rose-500 px-2 py-0.5 rounded shadow-sm border border-white text-[9px] font-bold text-white whitespace-nowrap">${inc.cases} cases</div>`,
-        iconSize: [50, 20],
-        iconAnchor: [25, -10]
+        html: `<div class="bg-slate-900 px-2 py-0.5 rounded shadow-xl border border-white/20 text-[9px] font-bold text-white whitespace-nowrap flex items-center gap-1.5">
+                <div class="w-1.5 h-1.5 rounded-full" style="background-color: ${config.color}"></div>
+                ${inc.cases} Cases
+               </div>`,
+        iconSize: [60, 20],
+        iconAnchor: [30, -12]
       });
       // @ts-ignore
       L.marker([inc.lat, inc.lng], { icon: labelIcon }).addTo(mapInstance.current);
@@ -347,6 +361,9 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
     if (type === 'FACILITY') {
       const doctors = MOCK_DOCTORS.filter(d => d.facilityId === node.id);
       related.push(...doctors);
+    } else if (type === 'INCIDENT') {
+       const taxonomy = MOCK_TAXONOMY.find(t => t.id === node.taxonomyId);
+       if (taxonomy) related.push(taxonomy);
     }
 
     const analysis = await analyzeFullSystemLineage(node, related);
@@ -435,6 +452,32 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
              )}
           </div>
 
+          {(viewMode === 'standard' || variant === 'dashboard') && (
+            <div className="absolute bottom-6 left-6 z-[1000]">
+               <div className="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-2xl border border-slate-100 min-w-[160px]">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Epidemic Severity</p>
+                  <div className="space-y-2">
+                     <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full bg-red-900 severity-critical"></div>
+                        <span className="text-[10px] font-bold text-slate-700">Critical</span>
+                     </div>
+                     <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full bg-red-500 severity-high"></div>
+                        <span className="text-[10px] font-bold text-slate-700">High</span>
+                     </div>
+                     <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full bg-orange-500 severity-medium"></div>
+                        <span className="text-[10px] font-bold text-slate-700">Medium</span>
+                     </div>
+                     <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full bg-yellow-500 severity-low"></div>
+                        <span className="text-[10px] font-bold text-slate-700">Monitoring</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+          )}
+
           {variant !== 'optimizer' && variant !== 'journey' && (
             <form onSubmit={handleSearch} className="absolute right-6 top-6 z-[1000] w-64">
               <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-100 flex items-center px-4 py-1">
@@ -501,7 +544,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex-1 flex flex-col min-h-0 overflow-y-auto animate-in slide-in-from-right-4">
               <div className="flex items-center gap-4 mb-6">
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg ${
-                  selectedNode.nodeType === 'FACILITY' ? 'bg-blue-500' : 'bg-rose-500'
+                  selectedNode.nodeType === 'FACILITY' ? 'bg-blue-500' : (selectedNode.severity === 'critical' ? 'bg-red-900' : 'bg-rose-500')
                 }`}>
                   {selectedNode.name?.charAt(0) || 'L'}
                 </div>
@@ -510,7 +553,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
                     {selectedNode.name || selectedNode.type}
                   </h3>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                    Node: {selectedNode.nodeType}
+                    Node: {selectedNode.nodeType} {selectedNode.severity ? `(${selectedNode.severity.toUpperCase()})` : ''}
                   </p>
                 </div>
               </div>
@@ -525,13 +568,21 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
                      </div>
                      <div>
                         <p className="text-slate-400">Status</p>
-                        <p className="font-bold text-blue-600">{selectedNode.status || 'Verified'}</p>
+                        <p className={`font-bold ${selectedNode.severity === 'critical' ? 'text-red-600' : 'text-blue-600'}`}>
+                          {selectedNode.status || 'Verified'}
+                        </p>
                      </div>
+                     {selectedNode.cases && (
+                       <div className="col-span-2 pt-2 border-t border-slate-200 mt-2">
+                          <p className="text-slate-400">Recorded Inflow</p>
+                          <p className="text-lg font-black text-slate-800">{selectedNode.cases} Active Cases</p>
+                       </div>
+                     )}
                   </div>
                 </div>
                 <div>
                   <h4 className="text-[10px] font-bold text-slate-400 uppercase mb-3 flex items-center gap-2">
-                     <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                     <div className={`w-2 h-2 rounded-full animate-pulse ${selectedNode.nodeType === 'INCIDENT' ? 'bg-rose-500' : 'bg-blue-500'}`}></div>
                      AI System Analysis
                   </h4>
                   {loading ? (
@@ -555,7 +606,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
                  </svg>
               </div>
               <h3 className="text-lg font-bold text-slate-800 mb-2">Lineage Inspector</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">Select a node to inspect operational details.</p>
+              <p className="text-sm text-slate-500 leading-relaxed">Select a node or health incident to inspect operational details.</p>
             </div>
           )}
         </div>

@@ -22,7 +22,8 @@ export interface RACIMapping {
   map: Role[];
   taxonomy: Role[];
   profile: Role[];
-  rbac: Role[]; // Added for system management
+  rbac: Role[];
+  planning: Role[]; // Added for ESRI Business Analyst module
 }
 
 export interface Message {
@@ -65,6 +66,13 @@ export interface SecurityProtocol {
   standard: 'HIPAA' | 'PII' | 'AES-256' | 'GDPR' | 'SOC2';
 }
 
+export interface ReminderSettings {
+  pushEnabled: boolean;
+  emailEnabled: boolean;
+  minutesBefore: number;
+  lastSent?: string;
+}
+
 export interface Appointment {
   id: string;
   doctorId: string;
@@ -80,6 +88,7 @@ export interface Appointment {
     healthGainScore: number;
     predictedRecoveryBoost: string;
   };
+  reminderSettings?: ReminderSettings;
 }
 
 export interface Doctor {

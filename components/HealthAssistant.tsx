@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { getHealthAssistantResponse, generateMedicalIllustration, startMedicalAnimationGeneration, pollVideoOperation, AssistantResponse } from '../services/gemini';
 import { Message } from '../types';
@@ -55,14 +56,19 @@ const HealthAssistant: React.FC = () => {
     }
   }, [messages, isLoading, isGeneratingVideo]);
 
-  const handleVideoGeneration = async () => {
-    if (!input.trim() || isGeneratingVideo) return;
-
+  const ensureApiKey = async () => {
     const hasKey = await (window as any).aistudio.hasSelectedApiKey();
     if (!hasKey) {
-      alert("Cinematic animations require a paid API key for Veo models. Please select one in the following dialog.");
+      alert("This tool requires high-fidelity generation which requires a paid GCP project API key. Please select one in the following dialog.");
       await (window as any).aistudio.openSelectKey();
+      return true; // Proceed assuming selection success
     }
+    return true;
+  };
+
+  const handleVideoGeneration = async () => {
+    if (!input.trim() || isGeneratingVideo) return;
+    await ensureApiKey();
 
     setIsGeneratingVideo(true);
     setVideoProgress('Initializing Veo Synthesis Engine...');
@@ -119,6 +125,10 @@ const HealthAssistant: React.FC = () => {
   const handleSend = async (e?: React.FormEvent, isVisualGuideRequest: boolean = false) => {
     if (e) e.preventDefault();
     if ((!input.trim() && !attachedFile) || isLoading) return;
+
+    if (isVisualGuideRequest) {
+      await ensureApiKey();
+    }
 
     const userMessage: EnhancedMessage = {
       id: Date.now().toString(),
@@ -310,7 +320,37 @@ const HealthAssistant: React.FC = () => {
         )}
       </div>
 
-      <div className="p-6 border-t border-slate-100 bg-white">
+      <div className="p-6 border-t border-slate-100 bg-white space-y-4">
+        {/* Clinical Toolkit Actions */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+           <button 
+            type="button"
+            onClick={() => handleSend(undefined, true)}
+            disabled={!input.trim() || isLoading}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all whitespace-nowrap disabled:opacity-50"
+           >
+             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" /></svg>
+             Request Anatomical Diagram
+           </button>
+           <button 
+            type="button"
+            onClick={handleVideoGeneration}
+            disabled={!input.trim() || isGeneratingVideo}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all whitespace-nowrap disabled:opacity-50"
+           >
+             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+             Synthesize Medical Animation
+           </button>
+           <button 
+            type="button"
+            onClick={() => setInput("Perform a detailed clinical triage for my current symptoms and suggest optimization vectors.")}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all whitespace-nowrap"
+           >
+             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+             Symptom Analyzer
+           </button>
+        </div>
+
         <form onSubmit={handleSend} className="flex gap-3 items-center">
           <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => {
             const f = e.target.files?.[0]; if (f) {
@@ -328,7 +368,7 @@ const HealthAssistant: React.FC = () => {
             <input 
               value={input} 
               onChange={(e) => setInput(e.target.value)} 
-              placeholder="Query symptoms, medical trends, or global health research..." 
+              placeholder="Describe symptoms for analysis or diagram request..." 
               className="w-full bg-slate-50 border-slate-100 rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" 
             />
             {attachedFile && (
@@ -340,15 +380,6 @@ const HealthAssistant: React.FC = () => {
           </div>
           <div className="flex gap-2">
             <button 
-              type="button" 
-              onClick={() => handleSend(undefined, true)} 
-              disabled={!input.trim()} 
-              className="p-4 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 shadow-lg shadow-blue-200 disabled:opacity-50 transition-all" 
-              title="High-Res Anatomy Diagram"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" /></svg>
-            </button>
-            <button 
               type="submit" 
               disabled={!input.trim() && !attachedFile} 
               className="p-4 bg-emerald-500 text-white rounded-2xl hover:bg-emerald-600 shadow-lg shadow-emerald-200 disabled:opacity-50 transition-all"
@@ -357,7 +388,7 @@ const HealthAssistant: React.FC = () => {
             </button>
           </div>
         </form>
-        <div className="flex justify-center gap-6 mt-3">
+        <div className="flex justify-center gap-6 mt-1">
           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
             <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
             NEXIS Grounding Enabled

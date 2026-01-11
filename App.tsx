@@ -9,6 +9,7 @@ import HealthMap from './components/HealthMap';
 import TaxonomyExplorer from './components/TaxonomyExplorer';
 import OperationsManager from './components/OperationsManager';
 import OperationalOptimizer from './components/OperationalOptimizer';
+import PlanningManager from './components/PlanningManager';
 import RBACManager from './components/RBACManager';
 import RightPanel from './components/RightPanel';
 import LandingPage from './components/LandingPage';
@@ -91,6 +92,8 @@ const App: React.FC = () => {
         );
       case 'strategy':
         return <OperationalOptimizer />;
+      case 'planning':
+        return <PlanningManager isDarkMode={isDarkMode} />;
       case 'map':
         return <HealthMap />;
       case 'taxonomy':

@@ -1,13 +1,23 @@
+
 import React, { useState, useEffect } from 'react';
-import { Appointment, Doctor } from '../types';
+import { Appointment, Doctor, ReminderSettings } from '../types';
 import { MOCK_APPOINTMENTS, MOCK_DOCTORS } from '../constants';
 import HealthMap from './HealthMap';
+import { generatePersonalizedReminder } from '../services/gemini';
 
 const AppointmentManager: React.FC = () => {
-  const [appointments, setAppointments] = useState<Appointment[]>(MOCK_APPOINTMENTS);
+  const [appointments, setAppointments] = useState<Appointment[]>(() => 
+    MOCK_APPOINTMENTS.map(app => ({
+      ...app,
+      reminderSettings: { pushEnabled: true, emailEnabled: false, minutesBefore: 60 }
+    }))
+  );
   const [isBooking, setIsBooking] = useState(false);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedJourneyApp, setSelectedJourneyApp] = useState<Appointment | null>(null);
+  const [configuringReminderApp, setConfiguringReminderApp] = useState<Appointment | null>(null);
+  const [isSendingReminder, setIsSendingReminder] = useState(false);
+  const [reminderDraft, setReminderDraft] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     doctorId: '',
@@ -29,7 +39,6 @@ const AppointmentManager: React.FC = () => {
     const selectedDoctor = MOCK_DOCTORS.find(d => d.id === formData.doctorId);
     if (!selectedDoctor) return;
 
-    // Simulate outcome calculation
     const distance = (Math.random() * 5 + 1).toFixed(1);
     
     const newAppointment: Appointment = {
@@ -50,12 +59,36 @@ const AppointmentManager: React.FC = () => {
         travelTimeMin: Math.round(parseFloat(distance) * 4),
         healthGainScore: 70 + Math.floor(Math.random() * 30),
         predictedRecoveryBoost: 'Optimization of treatment plan based on latest diagnostic tools available at the facility.'
-      }
+      },
+      reminderSettings: { pushEnabled: true, emailEnabled: true, minutesBefore: 60 }
     };
 
     setAppointments(prev => [newAppointment, ...prev]);
     setIsBooking(false);
     setFormData({ doctorId: '', date: '', time: '', departureAddress: 'Current Location' });
+  };
+
+  const updateReminderSettings = (id: string, settings: ReminderSettings) => {
+    setAppointments(prev => prev.map(app => 
+      app.id === id ? { ...app, reminderSettings: settings } : app
+    ));
+    setConfiguringReminderApp(null);
+  };
+
+  const handleTriggerReminder = async (app: Appointment) => {
+    setIsSendingReminder(true);
+    setReminderDraft(null);
+    const draft = await generatePersonalizedReminder(app);
+    setReminderDraft(draft);
+    
+    // Simulate real dispatch
+    setTimeout(() => {
+      setIsSendingReminder(false);
+      // Actual implementation would call a backend API here
+      setAppointments(prev => prev.map(a => 
+        a.id === app.id ? { ...a, reminderSettings: { ...a.reminderSettings!, lastSent: new Date().toISOString() } } : a
+      ));
+    }, 2000);
   };
 
   const getStatusStyle = (status: string) => {
@@ -72,7 +105,7 @@ const AppointmentManager: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">Appointments</h2>
-          <p className="text-slate-500">Plan your visits with integrated logistics and health vectors.</p>
+          <p className="text-slate-500">Plan your visits with integrated logistics and smart reminders.</p>
         </div>
         <button 
           onClick={() => setIsBooking(true)}
@@ -124,10 +157,6 @@ const AppointmentManager: React.FC = () => {
                       <p className="font-bold text-slate-800">{doctor.name}</p>
                       <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">{doctor.specialty}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-[10px] text-slate-400 font-bold uppercase">Location</p>
-                      <p className="text-xs text-slate-600 font-medium">San Francisco, CA</p>
-                    </div>
                   </label>
                 ))}
               </div>
@@ -136,18 +165,13 @@ const AppointmentManager: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Departure Location</label>
-                <div className="relative">
-                  <input 
-                    type="text" required
-                    value={formData.departureAddress}
-                    onChange={e => setFormData({...formData, departureAddress: e.target.value})}
-                    className="w-full bg-slate-50 border-slate-200 rounded-xl pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                    placeholder="Enter starting address"
-                  />
-                  <svg className="w-5 h-5 text-emerald-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  </svg>
-                </div>
+                <input 
+                  type="text" required
+                  value={formData.departureAddress}
+                  onChange={e => setFormData({...formData, departureAddress: e.target.value})}
+                  className="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-2.5"
+                  placeholder="Enter starting address"
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -170,12 +194,15 @@ const AppointmentManager: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {appointments.map(app => (
-            <div key={app.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group relative overflow-hidden">
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-emerald-500 border border-slate-100">
+            <div key={app.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group relative overflow-hidden flex flex-col">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-emerald-500 border border-slate-100 relative group-hover:scale-105 transition-transform">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   </svg>
+                  {app.reminderSettings?.pushEnabled && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white animate-pulse"></div>
+                  )}
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between items-start mb-1">
@@ -184,56 +211,175 @@ const AppointmentManager: React.FC = () => {
                       {app.status}
                     </span>
                   </div>
-                  <p className="text-emerald-600 text-sm font-medium mb-2">{app.specialty}</p>
-                  
-                  {app.patientLocation && (
-                    <div className="mb-4 flex flex-col gap-1">
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <span className="font-bold text-slate-600">From:</span> {app.patientLocation.address}
-                      </div>
-                      <button 
-                        onClick={() => setSelectedJourneyApp(app)}
-                        className="text-left text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-widest mt-1 flex items-center gap-1"
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                        </svg>
-                        View Journey Map
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="flex flex-wrap gap-4 pt-4 border-t border-slate-50">
-                    <div className="flex items-center gap-2 text-sm text-slate-500">
-                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      {new Date(app.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </div>
-                    {app.outcomeMetrics && (
-                      <div className="flex items-center gap-2 text-sm text-emerald-600 font-bold">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
-                        {app.outcomeMetrics.healthGainScore}% Health Gain
-                      </div>
-                    )}
-                  </div>
+                  <p className="text-emerald-600 text-sm font-medium mb-1">{app.specialty}</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                    {new Date(app.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} @ {app.time}
+                  </p>
                 </div>
               </div>
+
+              <div className="flex flex-wrap gap-2 mb-4">
+                <button 
+                  onClick={() => setSelectedJourneyApp(app)}
+                  className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center gap-1.5"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
+                  Journey Map
+                </button>
+                <button 
+                  onClick={() => setConfiguringReminderApp(app)}
+                  className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all flex items-center gap-1.5"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                  Smart Reminders
+                </button>
+                <button 
+                  onClick={() => handleTriggerReminder(app)}
+                  className="px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all flex items-center gap-1.5"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                  Send Now
+                </button>
+              </div>
+
+              {app.reminderSettings?.lastSent && (
+                <p className="text-[9px] text-slate-400 italic">Last reminder sent: {new Date(app.reminderSettings.lastSent).toLocaleTimeString()}</p>
+              )}
             </div>
           ))}
         </div>
       )}
 
-      {/* Journey Modal */}
+      {/* Reminder Config Modal */}
+      {configuringReminderApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden p-8">
+            <h3 className="text-2xl font-bold text-slate-800 mb-2">Reminder Preferences</h3>
+            <p className="text-sm text-slate-500 mb-8">Personalize how NextCare AI communicates with you for this visit.</p>
+            
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div>
+                   <p className="text-sm font-bold text-slate-800">Push Notifications</p>
+                   <p className="text-[10px] text-slate-400">Low-latency tactical alerts</p>
+                </div>
+                <button 
+                  onClick={() => setConfiguringReminderApp({
+                    ...configuringReminderApp, 
+                    reminderSettings: { ...configuringReminderApp.reminderSettings!, pushEnabled: !configuringReminderApp.reminderSettings?.pushEnabled }
+                  })}
+                  className={`w-12 h-6 rounded-full transition-all relative ${configuringReminderApp.reminderSettings?.pushEnabled ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                >
+                   <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${configuringReminderApp.reminderSettings?.pushEnabled ? 'left-7' : 'left-1'}`}></div>
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div>
+                   <p className="text-sm font-bold text-slate-800">Email Updates</p>
+                   <p className="text-[10px] text-slate-400">Detailed clinical summary</p>
+                </div>
+                <button 
+                  onClick={() => setConfiguringReminderApp({
+                    ...configuringReminderApp, 
+                    reminderSettings: { ...configuringReminderApp.reminderSettings!, emailEnabled: !configuringReminderApp.reminderSettings?.emailEnabled }
+                  })}
+                  className={`w-12 h-6 rounded-full transition-all relative ${configuringReminderApp.reminderSettings?.emailEnabled ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                >
+                   <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${configuringReminderApp.reminderSettings?.emailEnabled ? 'left-7' : 'left-1'}`}></div>
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Time Before Dispatch</label>
+                <div className="grid grid-cols-3 gap-2">
+                   {[15, 60, 1440].map(m => (
+                     <button 
+                        key={m}
+                        onClick={() => setConfiguringReminderApp({
+                          ...configuringReminderApp, 
+                          reminderSettings: { ...configuringReminderApp.reminderSettings!, minutesBefore: m }
+                        })}
+                        className={`py-2 rounded-xl text-[10px] font-bold border transition-all ${
+                          configuringReminderApp.reminderSettings?.minutesBefore === m 
+                            ? 'bg-slate-900 text-white border-slate-900 shadow-lg' 
+                            : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300'
+                        }`}
+                     >
+                       {m >= 1440 ? '24h' : m >= 60 ? '1h' : `${m}m`}
+                     </button>
+                   ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 flex flex-col gap-3">
+              <button 
+                onClick={() => updateReminderSettings(configuringReminderApp.id, configuringReminderApp.reminderSettings!)}
+                className="w-full py-4 bg-emerald-500 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-200"
+              >
+                Save Protocol
+              </button>
+              <button 
+                onClick={() => setConfiguringReminderApp(null)}
+                className="w-full py-3 text-[10px] font-black uppercase text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                Cancel Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sending Animation Overlay */}
+      {isSendingReminder && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
+           <div className="bg-white rounded-[3rem] p-12 shadow-2xl border border-white/20 text-center flex flex-col items-center gap-6 animate-in zoom-in duration-500 max-w-sm">
+              <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center text-white relative">
+                <div className="absolute inset-0 bg-emerald-500 rounded-full animate-ping opacity-20"></div>
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+              </div>
+              <div>
+                <h4 className="text-xl font-bold text-slate-800 mb-1">Personalizing Alert</h4>
+                <p className="text-xs text-slate-500 font-medium">NEXIS Core is drafting a reassuring message based on clinical context...</p>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* Draft Notification Display */}
+      {reminderDraft && !isSendingReminder && (
+        <div className="fixed top-8 right-8 z-[200] max-w-xs w-full animate-in slide-in-from-right duration-500">
+          <div className="bg-slate-900 text-white rounded-3xl shadow-2xl p-6 border border-white/10 relative overflow-hidden group">
+            <div className="absolute -right-8 -top-8 w-24 h-24 bg-emerald-500/10 rounded-full group-hover:scale-150 transition-transform"></div>
+            <div className="flex items-center gap-3 mb-4">
+               <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+               </div>
+               <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Push Alert Dispatched</p>
+                  <p className="text-xs font-bold">Clinical Reminder</p>
+               </div>
+            </div>
+            <p className="text-sm text-slate-300 leading-relaxed font-medium italic">"{reminderDraft}"</p>
+            <button 
+              onClick={() => setReminderDraft(null)}
+              className="mt-6 w-full py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Journey Modal (Existing) */}
       {selectedJourneyApp && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-5xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col h-[85vh]">
              <div className="p-8 border-b border-slate-100 flex items-center justify-between">
                 <div>
                    <h3 className="text-2xl font-bold text-slate-800">Patient Journey Intelligence</h3>
-                   <p className="text-sm text-slate-500">Mapping tactical route and predicted health outcome vector for {selectedJourneyApp.doctorName}.</p>
+                   <p className="text-sm text-slate-500">Mapping tactical route and predicted health outcome vector.</p>
                 </div>
                 <button 
                   onClick={() => setSelectedJourneyApp(null)}
@@ -256,40 +402,14 @@ const AppointmentManager: React.FC = () => {
                          <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
                             <p className="text-[10px] text-emerald-600 font-bold uppercase mb-1">Destination</p>
                             <p className="text-sm font-bold text-slate-800">{selectedJourneyApp.doctorName}</p>
-                            <p className="text-xs text-slate-500">{selectedJourneyApp.specialty}</p>
                          </div>
                       </div>
                    </div>
-
-                   <div>
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Logistics Metrics</h4>
-                      <div className="grid grid-cols-2 gap-3">
-                         <div className="bg-white p-4 rounded-2xl border border-slate-200">
-                            <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Distance</p>
-                            <p className="text-lg font-bold text-slate-800">{selectedJourneyApp.outcomeMetrics?.distanceKm} km</p>
-                         </div>
-                         <div className="bg-white p-4 rounded-2xl border border-slate-200">
-                            <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Est. Time</p>
-                            <p className="text-lg font-bold text-slate-800">{selectedJourneyApp.outcomeMetrics?.travelTimeMin} min</p>
-                         </div>
-                      </div>
-                   </div>
-
-                   <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-3xl text-white shadow-lg shadow-blue-100 mt-auto">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                           </svg>
-                        </div>
-                        <h5 className="font-bold text-sm">Outcome Vector</h5>
-                      </div>
-                      <p className="text-xs text-blue-100 leading-relaxed mb-4">
-                        Gemini predicts a <span className="text-white font-bold">{selectedJourneyApp.outcomeMetrics?.healthGainScore}% efficiency boost</span> in clinical recovery post-visit.
+                   <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-3xl text-white shadow-lg mt-auto">
+                      <h5 className="font-bold text-sm mb-2">Outcome Vector</h5>
+                      <p className="text-xs text-blue-100 leading-relaxed">
+                        Gemini predicts a <span className="text-white font-bold">{selectedJourneyApp.outcomeMetrics?.healthGainScore}% efficiency boost</span> in clinical recovery.
                       </p>
-                      <div className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden">
-                         <div className="bg-white h-full" style={{ width: `${selectedJourneyApp.outcomeMetrics?.healthGainScore}%` }}></div>
-                      </div>
                    </div>
                 </div>
                 <div className="flex-1 relative bg-slate-100">

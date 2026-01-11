@@ -12,7 +12,8 @@ export const INITIAL_RACI: DynamicRACI = {
   map: ['SUPER_ADMIN', 'CLINICAL_LEAD', 'LOGISTICS_CHIEF'],
   taxonomy: ['SUPER_ADMIN', 'CLINICAL_LEAD'],
   profile: ['SUPER_ADMIN', 'PATIENT'],
-  rbac: ['SUPER_ADMIN']
+  rbac: ['SUPER_ADMIN'],
+  planning: ['SUPER_ADMIN', 'LOGISTICS_CHIEF']
 };
 
 export const MOCK_FACILITIES: Facility[] = [

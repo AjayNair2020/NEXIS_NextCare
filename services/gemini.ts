@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 
 export const generateMedicalIllustration = async (prompt: string) => {
@@ -116,6 +117,25 @@ export const getHealthAssistantResponse = async (
   } catch (error) {
     console.error("Gemini API Error:", error);
     return { text: "I encountered an error while trying to assist you. Please try again in a moment." };
+  }
+};
+
+export const generatePersonalizedReminder = async (appointment: any): Promise<string> => {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Draft a personalized, professional, and reassuring health reminder for the following appointment: ${JSON.stringify(appointment)}.
+      Keep it brief (max 2 sentences). Include the doctor's name and the scheduled time. Focus on the value of the visit.`,
+      config: {
+        systemInstruction: "You are an empathetic healthcare coordinator at NextCare AI.",
+        temperature: 0.7,
+      },
+    });
+    return response.text || "Just a reminder for your upcoming appointment with NextCare.";
+  } catch (error) {
+    console.error("Reminder Generation Error:", error);
+    return `Reminder: Your appointment with ${appointment.doctorName} is scheduled for ${appointment.time}.`;
   }
 };
 
