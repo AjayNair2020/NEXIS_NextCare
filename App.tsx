@@ -11,6 +11,7 @@ import OperationsManager from './components/OperationsManager';
 import OperationalOptimizer from './components/OperationalOptimizer';
 import PlanningManager from './components/PlanningManager';
 import SupplyChainManager from './components/SupplyChainManager';
+import PreventiveHealthManager from './components/PreventiveHealthManager';
 import RBACManager from './components/RBACManager';
 import RightPanel from './components/RightPanel';
 import LandingPage from './components/LandingPage';
@@ -98,6 +99,8 @@ const App: React.FC = () => {
         return <PlanningManager isDarkMode={isDarkMode} />;
       case 'supplyChain':
         return <SupplyChainManager isDarkMode={isDarkMode} />;
+      case 'preventiveHealth':
+        return <PreventiveHealthManager isDarkMode={isDarkMode} />;
       case 'map':
         return <HealthMap />;
       case 'taxonomy':

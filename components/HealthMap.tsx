@@ -452,7 +452,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
         <div className={`flex-1 bg-white rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden ${variant === 'dashboard' || variant === 'optimizer' || variant === 'journey' ? 'p-0 border-none rounded-none' : 'p-2'}`}>
           <div ref={mapContainer} className="w-full h-full" />
           
-          <div className="absolute left-6 top-6 z-[1000] flex flex-col gap-3">
+          <div className="absolute right-6 top-6 z-[1000] flex flex-col items-end gap-3">
              <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-100 flex flex-col overflow-hidden">
                 <button onClick={() => handleZoom(1)} className="p-3 hover:bg-slate-50 text-slate-600 transition-colors border-b border-slate-100">
                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
@@ -512,7 +512,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
           )}
 
           {variant !== 'optimizer' && variant !== 'journey' && (
-            <form onSubmit={handleSearch} className="absolute right-6 top-6 z-[1000] w-72">
+            <form onSubmit={handleSearch} className="absolute left-6 top-6 z-[1000] w-72">
               <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-100 flex items-center px-4 py-1.5 transition-all focus-within:ring-2 focus-within:ring-blue-500/20">
                   <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                   <input 

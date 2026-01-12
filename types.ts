@@ -24,7 +24,8 @@ export interface RACIMapping {
   profile: Role[];
   rbac: Role[];
   planning: Role[];
-  supplyChain: Role[]; // Added for Healthcare Supply Chain module
+  supplyChain: Role[];
+  preventiveHealth: Role[]; // Added for Preventive Health module
 }
 
 export interface Message {

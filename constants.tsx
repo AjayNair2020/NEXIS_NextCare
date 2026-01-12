@@ -14,7 +14,8 @@ export const INITIAL_RACI: DynamicRACI = {
   profile: ['SUPER_ADMIN', 'PATIENT'],
   rbac: ['SUPER_ADMIN'],
   planning: ['SUPER_ADMIN', 'LOGISTICS_CHIEF'],
-  supplyChain: ['SUPER_ADMIN', 'LOGISTICS_CHIEF']
+  supplyChain: ['SUPER_ADMIN', 'LOGISTICS_CHIEF'],
+  preventiveHealth: ['SUPER_ADMIN', 'CLINICAL_LEAD', 'LOGISTICS_CHIEF', 'PATIENT']
 };
 
 export const MOCK_FACILITIES: Facility[] = [
