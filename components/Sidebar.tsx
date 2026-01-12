@@ -38,11 +38,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
   const canAccessRBAC = raciConfig.rbac?.includes(user.role);
 
   return (
-    <div className={`${isCollapsed ? 'w-20' : 'w-64'} border-r flex flex-col h-screen fixed left-0 top-0 z-50 transition-all duration-500 ease-in-out group ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)]'}`}>
+    <div className={`${isCollapsed ? 'w-20' : 'w-64'} border-r flex flex-col h-screen fixed left-0 top-0 z-50 transition-all duration-500 ease-in-out group ${isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)]'}`}>
       
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className={`absolute -right-3 top-8 w-6 h-6 rounded-full border bg-white flex items-center justify-center shadow-md text-slate-400 hover:text-red-500 hover:border-red-500 transition-all z-50 ${isCollapsed ? 'rotate-180' : ''}`}
+        className={`absolute -right-3 top-8 w-6 h-6 rounded-full border bg-white flex items-center justify-center shadow-md text-slate-400 hover:text-amber-500 hover:border-amber-500 transition-all z-50 ${isCollapsed ? 'rotate-180' : ''}`}
       >
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
@@ -50,7 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
       </button>
 
       <div className={`p-6 flex items-center gap-3 overflow-hidden ${isCollapsed ? 'justify-center px-4' : ''}`}>
-        <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-200 shrink-0 ring-4 ring-red-500/10 transition-transform hover:scale-110">
+        <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-amber-200 shrink-0 ring-4 ring-amber-500/10 transition-transform hover:scale-110">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
@@ -67,32 +67,31 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
             onClick={() => setActiveTab(item.id)}
             className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 group relative ${
               activeTab === item.id
-                ? (isDarkMode ? 'bg-red-500/10 text-red-400 font-bold' : 'bg-red-50 text-red-700 font-bold shadow-sm')
-                : (isDarkMode ? 'text-slate-500 hover:bg-slate-800 hover:text-slate-300' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700')
+                ? (isDarkMode ? 'bg-amber-500/15 text-amber-400 font-bold' : 'bg-amber-50 text-amber-700 font-bold shadow-sm')
+                : (isDarkMode ? 'text-slate-400 hover:bg-white/5 hover:text-slate-100' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700')
             } ${isCollapsed ? 'justify-center' : ''}`}
             title={isCollapsed ? item.label : ''}
           >
-            <div className={`p-2 rounded-lg transition-colors shrink-0 ${activeTab === item.id ? 'bg-red-500 text-white' : (isDarkMode ? 'bg-slate-800 text-slate-600 group-hover:bg-slate-700' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600')}`}>
+            <div className={`p-2 rounded-lg transition-colors shrink-0 ${activeTab === item.id ? 'bg-amber-500 text-white' : (isDarkMode ? 'bg-slate-900 text-slate-500 group-hover:bg-slate-800 group-hover:text-slate-300' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600')}`}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
               </svg>
             </div>
             {!isCollapsed && <span className="text-sm truncate">{item.label}</span>}
             {isCollapsed && activeTab === item.id && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-500 rounded-r-full"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-amber-500 rounded-r-full"></div>
             )}
           </button>
         ))}
       </nav>
 
-      <div className={`p-4 border-t transition-all ${isDarkMode ? 'border-slate-100/10' : 'border-slate-100'}`}>
-        <div className={`rounded-[1.5rem] p-5 border relative overflow-hidden group shadow-inner transition-all duration-500 ${isDarkMode ? 'bg-slate-800/50 border-slate-800' : 'bg-slate-50 border-slate-100'} ${isCollapsed ? 'p-3 items-center flex flex-col gap-4' : ''}`}>
+      <div className={`p-4 border-t transition-all ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+        <div className={`rounded-[1.5rem] p-5 border relative overflow-hidden group shadow-inner transition-all duration-500 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-100'} ${isCollapsed ? 'p-3 items-center flex flex-col gap-4' : ''}`}>
           
-          {/* Panel Expand/Collapse Toggle Tool */}
           {!isCollapsed && (
             <button 
               onClick={() => setIsProfileExpanded(!isProfileExpanded)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors z-10"
+              className={`absolute top-4 right-4 text-slate-400 hover:text-amber-500 transition-colors z-10`}
               title={isProfileExpanded ? "Minimize Profile" : "Expand Profile"}
             >
               <svg className={`w-4 h-4 transition-transform duration-300 ${isProfileExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,31 +100,31 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
             </button>
           )}
 
-          <div className="absolute -right-2 -bottom-2 w-12 h-12 bg-red-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
+          <div className="absolute -right-2 -bottom-2 w-12 h-12 bg-amber-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
           
           {!isCollapsed ? (
             <>
               <div className="flex items-center gap-3 mb-1">
-                 <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-white font-black text-[10px]">
+                 <div className="w-8 h-8 rounded-lg bg-slate-800 border border-white/5 flex items-center justify-center text-white font-black text-[10px]">
                     {user.fullName.split(' ').map(n => n[0]).join('')}
                  </div>
                  {isProfileExpanded && (
                    <div className="animate-in fade-in slide-in-from-left-1">
-                     <p className={`text-sm font-bold truncate transition-colors ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{user.fullName}</p>
-                     <p className="text-[9px] font-black text-red-600 uppercase tracking-widest">{user.role.replace('_', ' ')}</p>
+                     <p className={`text-sm font-bold truncate transition-colors ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{user.fullName}</p>
+                     <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest">{user.role.replace('_', ' ')}</p>
                    </div>
                  )}
               </div>
 
               {isProfileExpanded && (
                 <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Session Protocol</p>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Session Protocol</p>
                   <p className={`text-[10px] font-medium italic ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Biometric Lock: Active</p>
                   
                   {canAccessRBAC && (
                     <button 
                       onClick={() => setActiveTab('rbac')}
-                      className={`mt-4 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'rbac' ? 'bg-red-500 text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-500 hover:text-red-600 hover:border-red-200'}`}
+                      className={`mt-4 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'rbac' ? 'bg-amber-500 text-white shadow-lg' : (isDarkMode ? 'bg-white/5 border border-white/10 text-slate-400 hover:text-amber-400 hover:border-amber-400/30' : 'bg-white border border-slate-200 text-slate-500 hover:text-amber-600 hover:border-amber-200')}`}
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944" />
@@ -136,7 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
 
                   <button 
                     onClick={onLogout}
-                    className="text-[10px] font-black text-rose-500 mt-4 hover:underline uppercase tracking-widest flex items-center gap-1.5 group/logout"
+                    className="text-[10px] font-black text-rose-500 mt-4 hover:text-rose-400 uppercase tracking-widest flex items-center gap-1.5 group/logout"
                   >
                     Terminate Session
                     <svg className="w-3 h-3 group-hover/logout:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,7 +154,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
                 <button 
                   onClick={() => setActiveTab('rbac')}
                   title="RBAC Console"
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${activeTab === 'rbac' ? 'bg-red-500 text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-400 hover:text-red-600'}`}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${activeTab === 'rbac' ? 'bg-amber-500 text-white shadow-lg' : (isDarkMode ? 'bg-slate-800 text-slate-400 border border-white/5' : 'bg-white border border-slate-200 text-slate-400 hover:text-amber-600')}`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -165,7 +164,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
               <button 
                 onClick={onLogout}
                 title="Terminate Session"
-                className="w-8 h-8 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-all"
+                className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-all"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7" />

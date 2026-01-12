@@ -25,7 +25,33 @@ export interface RACIMapping {
   rbac: Role[];
   planning: Role[];
   supplyChain: Role[];
-  preventiveHealth: Role[]; // Added for Preventive Health module
+  preventiveHealth: Role[];
+}
+
+export interface ProgramTask {
+  id: string;
+  name: string;
+  menuId: string;
+  startDay: number; // 0 (Mon) to 6 (Sun)
+  durationDays: number;
+  status: 'completed' | 'in-progress' | 'scheduled';
+  progress: number;
+  owner: string;
+}
+
+export interface EHRRecord {
+  id: string;
+  patientId: string;
+  type: 'condition' | 'medication' | 'lab' | 'immunization' | 'procedure' | 'visit';
+  title: string;
+  date: string;
+  status: 'active' | 'resolved' | 'final' | 'completed' | 'pending';
+  provider: string;
+  facility: string;
+  notes?: string;
+  value?: string; // Lab results value
+  unit?: string;  // Lab results unit
+  referenceRange?: string; // Lab reference range
 }
 
 export interface Message {

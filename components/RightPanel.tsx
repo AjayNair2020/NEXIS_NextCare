@@ -14,7 +14,7 @@ interface RightPanelProps {
 
 const RightPanel: React.FC<RightPanelProps> = ({ user, setActiveTab, mainScrollRef, onTriggerAlert, isDarkMode }) => {
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', role: 'assistant', content: 'Quick insight: Fleet efficiency up 12%. Need a health briefing?', timestamp: new Date() }
+    { id: '1', role: 'assistant', content: 'NEXIS Core ready. How can I assist with your health intelligence today?', timestamp: new Date() }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -31,28 +31,34 @@ const RightPanel: React.FC<RightPanelProps> = ({ user, setActiveTab, mainScrollR
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isTyping]);
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isTyping) return;
+  const handleSend = async (content: string) => {
+    if (!content.trim() || isTyping) return;
 
-    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: input, timestamp: new Date() };
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', content, timestamp: new Date() };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsTyping(true);
 
     const history = messages.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.content }] }));
-    const response = await getHealthAssistantResponse(input, history);
+    const response = await getHealthAssistantResponse(content, history);
     
     setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: response.text, timestamp: new Date() }]);
     setIsTyping(false);
   };
+
+  const quickFeatures = [
+    { label: 'Check Symptoms', prompt: 'I would like to perform a quick symptom analysis. Can you help?', icon: '⚡' },
+    { label: 'Explain Labs', prompt: 'Please help me interpret my recent clinical laboratory results.', icon: '🔬' },
+    { label: 'Medication Info', prompt: 'I need information about my current prescriptions and side effects.', icon: '💊' },
+    { label: 'Daily Briefing', prompt: 'Provide a high-level briefing of my health metrics and agenda for today.', icon: '📊' }
+  ];
 
   // Calendar Logic
   const daysInMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -93,7 +99,7 @@ const RightPanel: React.FC<RightPanelProps> = ({ user, setActiveTab, mainScrollR
       <div className="absolute -left-12 top-1/2 -translate-y-1/2 flex flex-col gap-3">
         {[
           { icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15', label: 'Sync', onClick: () => { setIsSyncing(true); showToast("Syncing Database..."); setTimeout(() => setIsSyncing(false), 1500); }, color: 'hover:text-emerald-500' },
-          { icon: 'M13 10V3L4 14h7v7l9-11h-7z', label: 'Triage', onClick: () => { setActiveTab('assistant'); showToast("NEXIS AI Priority Active"); }, color: 'hover:text-blue-500' },
+          { icon: 'M13 10V3L4 14h7v7l9-11h-7z', label: 'Triage', onClick: () => { setActiveTab('assistant'); showToast("NEXIS AI Priority Active"); }, color: 'hover:text-amber-500' },
           { icon: 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', label: 'Alert', onClick: () => { onTriggerAlert(); showToast("Regional Alert Dispatched"); }, color: 'hover:text-rose-500' },
         ].map((action, i) => (
           <button 
@@ -112,6 +118,69 @@ const RightPanel: React.FC<RightPanelProps> = ({ user, setActiveTab, mainScrollR
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+        
+        {/* New AI Assistant Prominent Section */}
+        <section className={`p-5 rounded-[2.5rem] border transition-all ${isDarkMode ? 'bg-slate-950 border-slate-800 shadow-2xl' : 'bg-slate-900 border-slate-800 shadow-xl shadow-slate-200'}`}>
+          <div className="flex items-center gap-3 mb-5">
+             <div className="w-10 h-10 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+             </div>
+             <div>
+                <h3 className="text-xs font-black text-amber-400 uppercase tracking-[0.2em]">NEXIS Intelligence</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Proactive Assistance</p>
+             </div>
+          </div>
+
+          {/* Quick AI Features */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {quickFeatures.map((feat, i) => (
+              <button 
+                key={i}
+                onClick={() => handleSend(feat.prompt)}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-200 transition-all flex items-center gap-2"
+              >
+                <span>{feat.icon}</span>
+                {feat.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Assistant Chat Area */}
+          <div ref={scrollRef} className="h-48 overflow-y-auto mb-4 space-y-4 pr-2 scrollbar-hide">
+            {messages.map(m => (
+              <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`px-3 py-2 rounded-2xl text-[11px] max-w-[90%] leading-relaxed ${
+                  m.role === 'user' ? 'bg-amber-500 text-white font-bold' : 'bg-slate-800 text-slate-300 border border-slate-700 shadow-xl'
+                }`}>
+                  {m.content}
+                </div>
+              </div>
+            ))}
+            {isTyping && (
+              <div className="flex items-center gap-2 ml-1">
+                 <div className="flex gap-1">
+                   <div className="w-1 h-1 bg-amber-400 rounded-full animate-bounce"></div>
+                   <div className="w-1 h-1 bg-amber-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                   <div className="w-1 h-1 bg-amber-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                 </div>
+                 <span className="text-[10px] text-amber-400/50 font-black uppercase tracking-widest">Synthesizing...</span>
+              </div>
+            )}
+          </div>
+
+          <form onSubmit={(e) => { e.preventDefault(); handleSend(input); }} className="relative">
+            <input 
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder="Ask for help..." 
+              className="w-full bg-slate-800 border-none rounded-xl py-2.5 px-4 text-[11px] text-white placeholder:text-slate-600 focus:ring-2 focus:ring-amber-500/20 transition-all"
+            />
+            <button type="submit" className="absolute right-2 top-1.5 p-1 text-amber-500 hover:text-white transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+            </button>
+          </form>
+        </section>
+
         {/* KPI Section (Admin Only) */}
         {isLogistics && (
           <section className="animate-in fade-in slide-in-from-top-4 duration-500">
@@ -132,7 +201,7 @@ const RightPanel: React.FC<RightPanelProps> = ({ user, setActiveTab, mainScrollR
         )}
 
         {/* Tactical Calendar Section */}
-        <section className={`p-5 rounded-[2.5rem] border transition-all ${isDarkMode ? 'bg-slate-800/50 border-slate-700 shadow-[0_20px_50px_rgba(0,0,0,0.3)]' : 'bg-slate-50 border-slate-100 shadow-sm'}`}>
+        <section className={`p-5 rounded-[2.5rem] border transition-all ${isDarkMode ? 'bg-slate-800/50 border-slate-700 shadow-sm' : 'bg-slate-50 border-slate-100 shadow-sm'}`}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Health Calendar</h3>
             <div className="flex gap-2 bg-white/10 p-1 rounded-lg">
@@ -260,43 +329,6 @@ const RightPanel: React.FC<RightPanelProps> = ({ user, setActiveTab, mainScrollR
             </div>
           )}
         </section>
-
-        {/* Intelligence Link (Assistant) */}
-        {!isLogistics && (
-          <section className={`rounded-[2.5rem] p-5 shadow-2xl relative overflow-hidden flex flex-col h-80 border transition-all ${isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-900 border-slate-800'}`}>
-            <div className="absolute top-0 right-0 p-4">
-               <div className="flex gap-1">
-                  {[1,2,3].map(i => <div key={i} className="w-1 h-1 bg-emerald-400/50 rounded-full animate-pulse" style={{ animationDelay: `${i*200}ms` }}></div>)}
-               </div>
-            </div>
-            <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-4 italic">NEXIS Live Link</h4>
-            
-            <div ref={scrollRef} className="flex-1 overflow-y-auto mb-4 space-y-3 pr-2 scrollbar-hide">
-              {messages.map(m => (
-                <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`px-3 py-2 rounded-2xl text-[11px] max-w-[90%] leading-relaxed ${
-                    m.role === 'user' ? 'bg-emerald-500 text-white font-bold' : 'bg-slate-800 text-slate-300 border border-slate-700 shadow-xl'
-                  }`}>
-                    {m.content}
-                  </div>
-                </div>
-              ))}
-              {isTyping && <div className="text-[10px] text-emerald-400/50 italic animate-pulse tracking-widest font-black uppercase">Thinking...</div>}
-            </div>
-
-            <form onSubmit={handleSend} className="relative mt-auto">
-              <input 
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                placeholder="Secure Query..." 
-                className={`w-full bg-slate-800/50 border-none rounded-xl py-2.5 px-4 text-xs text-white placeholder:text-slate-600 focus:ring-2 focus:ring-emerald-500/20 transition-all`}
-              />
-              <button type="submit" className="absolute right-2 top-1.5 p-1 text-emerald-500 hover:text-white transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-              </button>
-            </form>
-          </section>
-        )}
       </div>
 
       {/* Footer Integrity Indicator */}

@@ -45,6 +45,19 @@
             70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
         }
+
+        /* Heartbeat Animation */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.2); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.2); }
+            70% { transform: scale(1); }
+        }
+        .animate-heartbeat {
+            animation: heartbeat 1.2s ease-in-out infinite;
+        }
+
         /* Severity Pulse Animations */
         @keyframes severity-low-pulse {
             0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4); }

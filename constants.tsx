@@ -1,5 +1,5 @@
 
-import { HealthMetric, Appointment, Medication, PatientProfile, Doctor, HealthIncident, TaxonomyNode, Facility, InventoryItem, TransportVehicle, OperationalService, ServiceArea, OptimizationScenario, SecurityProtocol, DynamicRACI, Role, ProductionOrder, Fulfillment } from './types';
+import { HealthMetric, Appointment, Medication, PatientProfile, Doctor, HealthIncident, TaxonomyNode, Facility, InventoryItem, TransportVehicle, OperationalService, ServiceArea, OptimizationScenario, SecurityProtocol, DynamicRACI, Role, ProductionOrder, Fulfillment, ProgramTask, EHRRecord } from './types';
 
 export const SUPER_ADMIN_EMAIL = "ajaybinduarti@gmail.com";
 
@@ -17,6 +17,26 @@ export const INITIAL_RACI: DynamicRACI = {
   supplyChain: ['SUPER_ADMIN', 'LOGISTICS_CHIEF'],
   preventiveHealth: ['SUPER_ADMIN', 'CLINICAL_LEAD', 'LOGISTICS_CHIEF', 'PATIENT']
 };
+
+export const MOCK_EHR_RECORDS: EHRRecord[] = [
+  { id: 'ehr-1', patientId: 'p-1', type: 'condition', title: 'Hypertension', date: '2021-03-12', status: 'active', provider: 'Dr. Sarah Jenkins', facility: 'UCSF Medical Center', notes: 'Stage 1 hypertension, monitoring lifestyle changes.' },
+  { id: 'ehr-2', patientId: 'p-1', type: 'lab', title: 'HbA1c', date: '2023-09-15', status: 'final', provider: 'Clinical Labs SF', facility: 'Quest Diagnostics', value: '5.4', unit: '%', referenceRange: '4.0 - 5.6%' },
+  { id: 'ehr-3', patientId: 'p-1', type: 'immunization', title: 'Influenza Vaccine', date: '2023-10-02', status: 'completed', provider: 'Pharmacy Hub 3', facility: 'Walgreens Hub', notes: 'Annual seasonal flu shot administered.' },
+  { id: 'ehr-4', patientId: 'p-1', type: 'procedure', title: 'Routine Echocardiogram', date: '2022-11-20', status: 'completed', provider: 'Cardiology Dept', facility: 'UCSF Medical Center', notes: 'Normal sinus rhythm, ejection fraction 62%.' },
+  { id: 'ehr-5', patientId: 'p-1', type: 'lab', title: 'Lipid Panel', date: '2023-09-15', status: 'final', provider: 'Clinical Labs SF', facility: 'Quest Diagnostics', value: '185', unit: 'mg/dL', referenceRange: '< 200 mg/dL' },
+  { id: 'ehr-6', patientId: 'p-1', type: 'visit', title: 'Annual Wellness Exam', date: '2023-05-10', status: 'completed', provider: 'Dr. Sarah Jenkins', facility: 'UCSF Medical Center', notes: 'Patient overall healthy. Encouraged continued exercise.' },
+];
+
+export const MOCK_PROGRAMS: ProgramTask[] = [
+  { id: 't1', name: 'NEXIS Core Assistant v2.5 Deployment', menuId: 'assistant', startDay: 0, durationDays: 3, status: 'completed', progress: 100, owner: 'Eng Team' },
+  { id: 't2', name: 'Community Vaccination Drive - SoMa', menuId: 'preventiveHealth', startDay: 1, durationDays: 4, status: 'in-progress', progress: 65, owner: 'Dr. Sarah' },
+  { id: 't3', name: 'Regional Capacity Stress Test', menuId: 'planning', startDay: 2, durationDays: 2, status: 'in-progress', progress: 40, owner: 'Logistics' },
+  { id: 't4', name: 'Amoxicillin Cold-Chain Restock', menuId: 'supplyChain', startDay: 0, durationDays: 2, status: 'completed', progress: 100, owner: 'Supply Hub 1' },
+  { id: 't5', name: 'Neurological Brain-Map UX Audit', menuId: 'taxonomy', startDay: 3, durationDays: 3, status: 'scheduled', progress: 0, owner: 'Clinical Research' },
+  { id: 't6', name: 'Fleet Telemetry Sync Migration', menuId: 'operations', startDay: 4, durationDays: 2, status: 'scheduled', progress: 0, owner: 'Tech Ops' },
+  { id: 't7', name: 'Epidemiological Map Refresh', menuId: 'map', startDay: 1, durationDays: 5, status: 'in-progress', progress: 82, owner: 'Data Science' },
+  { id: 't8', name: 'Staff RACI Matrix Validation', menuId: 'rbac', startDay: 5, durationDays: 1, status: 'scheduled', progress: 0, owner: 'Compliance' },
+];
 
 export const MOCK_FACILITIES: Facility[] = [
   { id: 'fac-1', name: 'UCSF Medical Center', type: 'hospital', lat: 37.7631, lng: -122.4578, status: '92% Occupancy', capacity: 500, storageLevel: 85, connectedHubId: 'log-1' },
