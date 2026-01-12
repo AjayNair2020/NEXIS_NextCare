@@ -38,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
   const canAccessRBAC = raciConfig.rbac?.includes(user.role);
 
   return (
-    <div className={`${isCollapsed ? 'w-20' : 'w-64'} border-r flex flex-col h-screen fixed left-0 top-0 z-50 transition-all duration-500 ease-in-out group ${isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)]'}`}>
+    <div className={`${isCollapsed ? 'w-20' : 'w-64'} border-r flex flex-col h-screen fixed left-0 top-0 z-50 transition-all duration-500 ease-in-out group ${isDarkMode ? 'bg-[#111d2b] border-blue-900/40 shadow-[4px_0_40px_rgba(0,0,0,0.3)]' : 'bg-white border-slate-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)]'}`}>
       
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
@@ -56,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
           </svg>
         </div>
         {!isCollapsed && (
-          <h1 className={`text-xl font-black tracking-tighter uppercase italic transition-all duration-300 animate-in fade-in slide-in-from-left-2 ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>NextCare</h1>
+          <h1 className={`text-xl font-black tracking-tighter uppercase italic transition-all duration-300 animate-in fade-in slide-in-from-left-2 ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>NextCare</h1>
         )}
       </div>
 
@@ -67,12 +67,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
             onClick={() => setActiveTab(item.id)}
             className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 group relative ${
               activeTab === item.id
-                ? (isDarkMode ? 'bg-amber-500/15 text-amber-400 font-bold' : 'bg-amber-50 text-amber-700 font-bold shadow-sm')
-                : (isDarkMode ? 'text-slate-400 hover:bg-white/5 hover:text-slate-100' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700')
+                ? (isDarkMode ? 'bg-blue-600/30 text-blue-100 font-bold border border-blue-500/30' : 'bg-amber-50 text-amber-700 font-bold shadow-sm')
+                : (isDarkMode ? 'text-blue-400 hover:bg-white/5 hover:text-blue-50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700')
             } ${isCollapsed ? 'justify-center' : ''}`}
             title={isCollapsed ? item.label : ''}
           >
-            <div className={`p-2 rounded-lg transition-colors shrink-0 ${activeTab === item.id ? 'bg-amber-500 text-white' : (isDarkMode ? 'bg-slate-900 text-slate-500 group-hover:bg-slate-800 group-hover:text-slate-300' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600')}`}>
+            <div className={`p-2 rounded-lg transition-colors shrink-0 ${activeTab === item.id ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : (isDarkMode ? 'bg-[#1a263e] text-blue-400 group-hover:bg-[#233554] group-hover:text-blue-100' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600')}`}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
               </svg>
@@ -85,8 +85,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
         ))}
       </nav>
 
-      <div className={`p-4 border-t transition-all ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
-        <div className={`rounded-[1.5rem] p-5 border relative overflow-hidden group shadow-inner transition-all duration-500 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-100'} ${isCollapsed ? 'p-3 items-center flex flex-col gap-4' : ''}`}>
+      <div className={`p-4 border-t transition-all ${isDarkMode ? 'border-blue-900/30' : 'border-slate-100'}`}>
+        <div className={`rounded-[1.5rem] p-5 border relative overflow-hidden group shadow-inner transition-all duration-500 ${isDarkMode ? 'bg-[#1a263e] border-blue-800' : 'bg-slate-50 border-slate-100'} ${isCollapsed ? 'p-3 items-center flex flex-col gap-4' : ''}`}>
           
           {!isCollapsed && (
             <button 
@@ -105,12 +105,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
           {!isCollapsed ? (
             <>
               <div className="flex items-center gap-3 mb-1">
-                 <div className="w-8 h-8 rounded-lg bg-slate-800 border border-white/5 flex items-center justify-center text-white font-black text-[10px]">
+                 <div className="w-8 h-8 rounded-lg bg-[#23324a] border border-blue-700/30 flex items-center justify-center text-white font-black text-[10px]">
                     {user.fullName.split(' ').map(n => n[0]).join('')}
                  </div>
                  {isProfileExpanded && (
                    <div className="animate-in fade-in slide-in-from-left-1">
-                     <p className={`text-sm font-bold truncate transition-colors ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{user.fullName}</p>
+                     <p className={`text-sm font-bold truncate transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>{user.fullName}</p>
                      <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest">{user.role.replace('_', ' ')}</p>
                    </div>
                  )}
@@ -118,13 +118,13 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
 
               {isProfileExpanded && (
                 <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Session Protocol</p>
-                  <p className={`text-[10px] font-medium italic ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Biometric Lock: Active</p>
+                  <p className="text-[10px] font-black text-blue-300/50 uppercase tracking-widest mb-1">Session Protocol</p>
+                  <p className={`text-[10px] font-medium italic ${isDarkMode ? 'text-blue-200/40' : 'text-slate-500'}`}>Biometric Lock: Active</p>
                   
                   {canAccessRBAC && (
                     <button 
                       onClick={() => setActiveTab('rbac')}
-                      className={`mt-4 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'rbac' ? 'bg-amber-500 text-white shadow-lg' : (isDarkMode ? 'bg-white/5 border border-white/10 text-slate-400 hover:text-amber-400 hover:border-amber-400/30' : 'bg-white border border-slate-200 text-slate-500 hover:text-amber-600 hover:border-amber-200')}`}
+                      className={`mt-4 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'rbac' ? 'bg-amber-500 text-white shadow-lg' : (isDarkMode ? 'bg-[#1a263e] border border-blue-700 text-blue-200 hover:bg-blue-800' : 'bg-white border border-slate-200 text-slate-500 hover:text-amber-600 hover:border-amber-200')}`}
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944" />
@@ -147,14 +147,14 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
             </>
           ) : (
             <div className="space-y-4 flex flex-col items-center">
-              <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-white font-black text-[10px]">
+              <div className="w-8 h-8 rounded-lg bg-[#23324a] flex items-center justify-center text-white font-black text-[10px]">
                 {user.fullName.split(' ').map(n => n[0]).join('')}
               </div>
               {canAccessRBAC && (
                 <button 
                   onClick={() => setActiveTab('rbac')}
                   title="RBAC Console"
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${activeTab === 'rbac' ? 'bg-amber-500 text-white shadow-lg' : (isDarkMode ? 'bg-slate-800 text-slate-400 border border-white/5' : 'bg-white border border-slate-200 text-slate-400 hover:text-amber-600')}`}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${activeTab === 'rbac' ? 'bg-amber-500 text-white shadow-lg' : (isDarkMode ? 'bg-[#1a263e] text-blue-300 border border-blue-700' : 'bg-white border border-slate-200 text-slate-400 hover:text-amber-600')}`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />

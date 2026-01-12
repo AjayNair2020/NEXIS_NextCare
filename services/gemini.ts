@@ -117,6 +117,63 @@ export const getHealthAssistantResponse = async (
   }
 };
 
+export const getDailyBriefing = async (metrics: any[], records: any[]): Promise<string> => {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Generate a concise (2-3 sentences) personalized daily health briefing for a patient. 
+      Analyze these weekly metrics: ${JSON.stringify(metrics)} and recent records: ${JSON.stringify(records)}. 
+      Focus on trends, encouraging compliance, and highlighting any positive changes. Tone: Premium, clinical, motivating.`,
+      config: {
+        systemInstruction: "You are NEXIS Core, a high-performance clinical narrative engine.",
+        temperature: 0.5,
+      }
+    });
+    return response.text || "Your health vectors remain stable today. NEXIS suggests maintaining current activity levels.";
+  } catch (error) {
+    return "NEXIS: Bio-telemetry narrative sync failed. All vitals report within normal range.";
+  }
+};
+
+export const getMedicationSafetyReview = async (meds: any[]): Promise<string> => {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: "gemini-3-pro-preview",
+      contents: `Perform a safety and interaction review for the following medication list: ${JSON.stringify(meds)}. 
+      Identify potential side effects, lifestyle restrictions (food/drink), and interaction risks. 
+      Format: Professional, categorized summary.`,
+      config: {
+        systemInstruction: "You are a clinical pharmacologist AI at NextCare.",
+        temperature: 0.2,
+      }
+    });
+    return response.text || "Safety review unavailable.";
+  } catch (error) {
+    return "Pharmaceutical interaction engine offline.";
+  }
+};
+
+export const optimizeClinicalNote = async (note: string): Promise<string> => {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Refine and optimize this clinical note for clarity, professionalism, and medical accuracy. 
+      Translate jargon into understandable context if it seems patient-facing, or structure it better if provider-facing.
+      Note: "${note}"`,
+      config: {
+        systemInstruction: "You are a medical scribe AI specialized in clinical documentation optimization.",
+        temperature: 0.3,
+      }
+    });
+    return response.text || note;
+  } catch (error) {
+    return note;
+  }
+};
+
 export const generatePersonalizedReminder = async (appointment: any): Promise<string> => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });

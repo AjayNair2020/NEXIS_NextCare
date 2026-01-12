@@ -1,5 +1,4 @@
 
-// ... imports remain same ...
 import React, { useState, useRef, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -55,7 +54,7 @@ const App: React.FC = () => {
   const renderContent = () => {
     if (!hasAccess(activeTab)) {
       return (
-        <div className={`flex flex-col items-center justify-center h-full text-center p-12 ${isDarkMode ? 'text-slate-300' : 'text-slate-800'}`}>
+        <div className={`flex flex-col items-center justify-center h-full text-center p-12 ${isDarkMode ? 'text-blue-100' : 'text-slate-800'}`}>
           <div className="w-20 h-20 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mb-6">
             <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -101,7 +100,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen flex overflow-hidden transition-all duration-500 ${isDarkMode ? 'bg-slate-950' : 'bg-slate-50'} ${isAlertActive ? 'ring-[12px] ring-amber-500/20' : ''}`}>
+    <div className={`min-h-screen flex overflow-hidden transition-all duration-500 ${isDarkMode ? 'bg-[#1b263b]' : 'bg-slate-50'} ${isAlertActive ? 'ring-[12px] ring-amber-500/20' : ''}`}>
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
@@ -115,16 +114,16 @@ const App: React.FC = () => {
       
       <main ref={mainScrollRef} className={`flex-1 ${isSidebarCollapsed ? 'ml-20' : 'ml-64'} mr-80 p-8 h-screen overflow-y-auto custom-scrollbar relative transition-all duration-500`}>
         {/* Top Bar */}
-        <div className={`flex items-center justify-between mb-8 sticky top-0 backdrop-blur-md z-20 py-2 transition-colors ${isDarkMode ? 'bg-slate-950/80' : 'bg-slate-50/80'}`}>
+        <div className={`flex items-center justify-between mb-8 sticky top-0 backdrop-blur-md z-20 py-2 transition-colors ${isDarkMode ? 'bg-[#1b263b]/80 border-b border-blue-900/30' : 'bg-slate-50/80 border-b border-slate-200'}`}>
           <div className="flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-xl shadow-sm border flex items-center justify-center transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-500' : 'bg-white border-slate-200 text-amber-500'}`}>
+            <div className={`w-10 h-10 rounded-xl shadow-sm border flex items-center justify-center transition-colors ${isDarkMode ? 'bg-[#23324a] border-blue-800 text-blue-300' : 'bg-white border-slate-200 text-amber-500'}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
-            <input type="text" placeholder="Global System Search..." className={`bg-transparent border-none focus:ring-0 text-sm font-medium w-64 placeholder:text-slate-400 transition-colors ${isDarkMode ? 'text-slate-100' : 'text-slate-600'}`} />
+            <input type="text" placeholder="Global System Search..." className={`bg-transparent border-none focus:ring-0 text-sm font-medium w-64 placeholder:text-slate-400 transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-600'}`} />
           </div>
           
           <div className="flex items-center gap-4">
-            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2.5 rounded-xl border transition-all duration-300 group ${isDarkMode ? 'bg-slate-900 border-slate-800 text-amber-400 hover:bg-slate-800 shadow-[0_0_15px_rgba(245,158,11,0.1)]' : 'bg-white border-slate-200 text-amber-500 hover:bg-slate-50 shadow-sm'}`}>
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2.5 rounded-xl border transition-all duration-300 group ${isDarkMode ? 'bg-[#23324a] border-blue-800 text-amber-400 hover:bg-blue-800 shadow-[0_0_15px_rgba(245,158,11,0.15)]' : 'bg-white border-slate-200 text-amber-500 hover:bg-slate-50 shadow-sm'}`}>
               {isDarkMode ? (
                 <svg className="w-5 h-5 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.95 17.95l.707-.707M7.05 7.05l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" /></svg>
               ) : (
@@ -134,11 +133,14 @@ const App: React.FC = () => {
 
             <div className="flex items-center gap-3 pl-4">
               <div className="text-right">
-                <p className={`text-xs font-bold transition-colors ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{user.fullName}</p>
+                <p className={`text-xs font-bold transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>{user.fullName}</p>
                 <div className="flex items-center justify-end gap-1.5">
-                  <div className="w-1.5 h-1.5 bg-amber-500 rounded-full"></div>
-                  <p className="text-[9px] text-amber-600 font-black uppercase tracking-widest">{user.role.replace('_', ' ')}</p>
+                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
+                  <p className="text-[9px] text-emerald-600 font-black uppercase tracking-widest">{user.role.replace('_', ' ')}</p>
                 </div>
+              </div>
+              <div className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-white font-black text-xs shadow-lg border border-white/10">
+                {user.fullName.split(' ').map(n => n[0]).join('')}
               </div>
             </div>
           </div>
