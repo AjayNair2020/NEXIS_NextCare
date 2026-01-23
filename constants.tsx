@@ -1,5 +1,5 @@
 
-import { HealthMetric, Appointment, Medication, PatientProfile, Doctor, HealthIncident, TaxonomyNode, Facility, InventoryItem, TransportVehicle, OperationalService, ServiceArea, OptimizationScenario, SecurityProtocol, DynamicRACI, Role, ProductionOrder, Fulfillment, ProgramTask, EHRRecord } from './types';
+import { HealthMetric, Appointment, Medication, PatientProfile, Doctor, HealthIncident, TaxonomyNode, Facility, InventoryItem, TransportVehicle, OperationalService, ServiceArea, OptimizationScenario, SecurityProtocol, DynamicRACI, Role, ProductionOrder, Fulfillment, ProgramTask, EHRRecord, ComplianceKPI } from './types';
 
 export const SUPER_ADMIN_EMAIL = "ajaybinduarti@gmail.com";
 
@@ -15,8 +15,24 @@ export const INITIAL_RACI: DynamicRACI = {
   rbac: ['SUPER_ADMIN'],
   planning: ['SUPER_ADMIN', 'LOGISTICS_CHIEF'],
   supplyChain: ['SUPER_ADMIN', 'LOGISTICS_CHIEF'],
-  preventiveHealth: ['SUPER_ADMIN', 'CLINICAL_LEAD', 'LOGISTICS_CHIEF', 'PATIENT']
+  preventiveHealth: ['SUPER_ADMIN', 'CLINICAL_LEAD', 'LOGISTICS_CHIEF', 'PATIENT'],
+  pharmaIndustry: ['SUPER_ADMIN', 'LOGISTICS_CHIEF']
 };
+
+export const MOCK_COMPLIANCE_KPIs: ComplianceKPI[] = [
+  { id: 'c1', category: 'EHS', name: 'Total Recordable Incident Rate', value: '0.42', status: 'compliant', trend: 'down', lastAudit: '2023-11-15', description: 'Occupational safety and health performance metric.' },
+  { id: 'c2', category: 'EHS', name: 'Safety Audit Completion', value: '98%', status: 'compliant', trend: 'stable', lastAudit: '2023-11-20', description: 'Internal safety verification rate.' },
+  { id: 'c3', category: 'ESG', name: 'Carbon Offset Progress', value: '22%', status: 'warning', trend: 'up', lastAudit: '2023-10-05', description: 'Reduction of net carbon emissions.' },
+  { id: 'c4', category: 'ESG', name: 'Social Responsibility Index', value: '8.5/10', status: 'compliant', trend: 'up', lastAudit: '2023-12-01', description: 'Community impact and social equity score.' },
+  { id: 'c5', category: 'ISO', name: 'ISO 27001 (Cybersecurity)', value: '94%', status: 'compliant', trend: 'stable', lastAudit: '2023-11-10', description: 'Security Management System maturity.' },
+  { id: 'c6', category: 'ISO', name: 'ISO 9001 (Quality)', value: '99.1%', status: 'compliant', trend: 'stable', lastAudit: '2023-11-10', description: 'Quality Management System adherence.' },
+  { id: 'c7', category: 'HIPAA', name: 'PHI Access Audit Log Integrity', value: '100%', status: 'compliant', trend: 'stable', lastAudit: '2024-01-10', description: 'Accuracy of patient data access records.' },
+  { id: 'c8', category: 'HIPAA', name: 'Privacy Violations Reported', value: '0', status: 'compliant', trend: 'stable', lastAudit: '2024-01-10', description: 'Recorded data breaches or mishandling.' },
+  { id: 'c9', category: 'GDPR', name: 'Data Access Request Fulfillment', value: '100%', status: 'compliant', trend: 'stable', lastAudit: '2023-12-15', description: 'Timeliness of user data requests.' },
+  { id: 'c10', category: 'GDPR', name: 'Consent Revocation Latency', value: '4ms', status: 'compliant', trend: 'down', lastAudit: '2023-12-15', description: 'Real-time processing speed for user consent changes.' },
+  { id: 'c11', category: 'GRI', name: 'Sustainability Reporting Level', value: 'Phase 4/5', status: 'warning', trend: 'up', lastAudit: '2023-09-20', description: 'Global Reporting Initiative framework adoption.' },
+  { id: 'c12', category: 'GRI', name: 'Waste Diversion Rate', value: '72%', status: 'compliant', trend: 'up', lastAudit: '2023-09-20', description: 'Percentage of non-hazardous waste diverted from landfills.' },
+];
 
 export const MOCK_EHR_RECORDS: EHRRecord[] = [
   { id: 'ehr-1', patientId: 'p-1', type: 'condition', title: 'Hypertension', date: '2021-03-12', status: 'active', provider: 'Dr. Sarah Jenkins', facility: 'UCSF Medical Center', notes: 'Stage 1 hypertension, monitoring lifestyle changes.' },
@@ -28,14 +44,14 @@ export const MOCK_EHR_RECORDS: EHRRecord[] = [
 ];
 
 export const MOCK_PROGRAMS: ProgramTask[] = [
-  { id: 't1', name: 'NEXIS Core Assistant v2.5 Deployment', menuId: 'assistant', startDay: 0, durationDays: 3, status: 'completed', progress: 100, owner: 'Eng Team' },
-  { id: 't2', name: 'Community Vaccination Drive - SoMa', menuId: 'preventiveHealth', startDay: 1, durationDays: 4, status: 'in-progress', progress: 65, owner: 'Dr. Sarah' },
-  { id: 't3', name: 'Regional Capacity Stress Test', menuId: 'planning', startDay: 2, durationDays: 2, status: 'in-progress', progress: 40, owner: 'Logistics' },
-  { id: 't4', name: 'Amoxicillin Cold-Chain Restock', menuId: 'supplyChain', startDay: 0, durationDays: 2, status: 'completed', progress: 100, owner: 'Supply Hub 1' },
-  { id: 't5', name: 'Neurological Brain-Map UX Audit', menuId: 'taxonomy', startDay: 3, durationDays: 3, status: 'scheduled', progress: 0, owner: 'Clinical Research' },
-  { id: 't6', name: 'Fleet Telemetry Sync Migration', menuId: 'operations', startDay: 4, durationDays: 2, status: 'scheduled', progress: 0, owner: 'Tech Ops' },
-  { id: 't7', name: 'Epidemiological Map Refresh', menuId: 'map', startDay: 1, durationDays: 5, status: 'in-progress', progress: 82, owner: 'Data Science' },
-  { id: 't8', name: 'Staff RACI Matrix Validation', menuId: 'rbac', startDay: 5, durationDays: 1, status: 'scheduled', progress: 0, owner: 'Compliance' },
+  { id: 't1', name: 'NEXIS Core Assistant v2.5 Deployment', menuId: 'assistant', startDay: 0, durationDays: 3, status: 'completed', progress: 100, owner: 'Eng Team', dueDate: '2023-10-25', completionDate: '2023-10-24', assignees: ['Dev Alpha', 'QA Lead'] },
+  { id: 't2', name: 'Community Vaccination Drive - SoMa', menuId: 'preventiveHealth', startDay: 1, durationDays: 4, status: 'in-progress', progress: 65, owner: 'Dr. Sarah', dueDate: '2023-10-28', assignees: ['Nurse Elena', 'Clinic Staff'] },
+  { id: 't3', name: 'Regional Capacity Stress Test', menuId: 'planning', startDay: 2, durationDays: 2, status: 'in-progress', progress: 40, owner: 'Logistics', dueDate: '2023-10-27', assignees: ['Marcus W.', 'Systems Eng'] },
+  { id: 't4', name: 'Amoxicillin Cold-Chain Restock', menuId: 'supplyChain', startDay: 0, durationDays: 2, status: 'completed', progress: 100, owner: 'Supply Hub 1', dueDate: '2023-10-22', completionDate: '2023-10-22', assignees: ['Fleet Team 1'] },
+  { id: 't5', name: 'Neurological Brain-Map UX Audit', menuId: 'taxonomy', startDay: 3, durationDays: 3, status: 'scheduled', progress: 0, owner: 'Clinical Research', dueDate: '2023-10-31', assignees: ['UX Researcher', 'Dr. Wilson'] },
+  { id: 't6', name: 'Fleet Telemetry Sync Migration', menuId: 'operations', startDay: 4, durationDays: 2, status: 'scheduled', progress: 0, owner: 'Tech Ops', dueDate: '2023-11-01', assignees: ['Data Sci 1', 'Infrastructure'] },
+  { id: 't7', name: 'Epidemiological Map Refresh', menuId: 'map', startDay: 1, durationDays: 5, status: 'in-progress', progress: 82, owner: 'Data Science', dueDate: '2023-10-29', assignees: ['GIS Specialist'] },
+  { id: 't8', name: 'Staff RACI Matrix Validation', menuId: 'rbac', startDay: 5, durationDays: 1, status: 'scheduled', progress: 0, owner: 'Compliance', dueDate: '2023-10-30', assignees: ['HR Manager', 'Audit Team'] },
 ];
 
 export const MOCK_FACILITIES: Facility[] = [

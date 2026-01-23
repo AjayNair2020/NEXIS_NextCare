@@ -26,6 +26,7 @@ export interface RACIMapping {
   planning: Role[];
   supplyChain: Role[];
   preventiveHealth: Role[];
+  pharmaIndustry: Role[];
 }
 
 export interface ProgramTask {
@@ -37,6 +38,20 @@ export interface ProgramTask {
   status: 'completed' | 'in-progress' | 'scheduled';
   progress: number;
   owner: string;
+  dueDate: string;
+  completionDate?: string;
+  assignees: string[];
+}
+
+export interface ComplianceKPI {
+  id: string;
+  category: 'EHS' | 'ESG' | 'ISO' | 'HIPAA' | 'GDPR' | 'GRI';
+  name: string;
+  value: string | number;
+  status: 'compliant' | 'warning' | 'critical';
+  trend: 'up' | 'down' | 'stable';
+  lastAudit: string;
+  description: string;
 }
 
 export interface EHRRecord {

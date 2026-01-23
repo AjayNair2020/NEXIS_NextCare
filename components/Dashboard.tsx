@@ -192,7 +192,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isDarkMode }) => {
                 </div>
                 NEXIS Program Lifecycle Planner
               </h3>
-              <p className={`text-sm font-medium mt-1 ${isDarkMode ? 'text-blue-300/40' : 'text-slate-500'}`}>Cross-domain strategic roadmap and milestone tracking</p>
+              <p className={`text-sm font-medium mt-1 ${isDarkMode ? 'text-blue-300/40' : 'text-slate-500'}`}>Strategic roadmap with RACI assignees and deadline tracking</p>
            </div>
            <div className="flex gap-4">
               <div className="flex items-center gap-2">
@@ -207,10 +207,10 @@ const Dashboard: React.FC<DashboardProps> = ({ isDarkMode }) => {
         </div>
 
         <div className="p-8 overflow-x-auto custom-scrollbar">
-           <div className="min-w-[800px]">
+           <div className="min-w-[900px]">
               {/* Timeline Header */}
-              <div className={`grid grid-cols-[240px_1fr] border-b pb-4 mb-4 ${isDarkMode ? 'border-blue-800' : 'border-slate-100'}`}>
-                 <div className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400/60' : 'text-slate-400'}`}>Strategic Unit</div>
+              <div className={`grid grid-cols-[300px_1fr] border-b pb-4 mb-4 ${isDarkMode ? 'border-blue-800' : 'border-slate-100'}`}>
+                 <div className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400/60' : 'text-slate-400'}`}>Strategic Unit / RACI Assignees</div>
                  <div className="grid grid-cols-7 gap-1 text-center">
                     {daysOfWeek.map((day, i) => (
                        <div key={i} className={`text-[10px] font-black uppercase tracking-widest ${i === 1 ? 'text-amber-500' : (isDarkMode ? 'text-blue-400/60' : 'text-slate-400')}`}>
@@ -222,14 +222,26 @@ const Dashboard: React.FC<DashboardProps> = ({ isDarkMode }) => {
               </div>
 
               {/* Task Rows */}
-              <div className="space-y-4">
+              <div className="space-y-6">
                  {MOCK_PROGRAMS.map((task) => (
-                    <div key={task.id} className="grid grid-cols-[240px_1fr] items-center group">
+                    <div key={task.id} className="grid grid-cols-[300px_1fr] items-start group">
                        <div className="pr-4">
-                          <h4 className={`text-xs font-bold transition-colors ${isDarkMode ? 'text-blue-100' : 'text-slate-700'} group-hover:text-amber-500`}>{task.name}</h4>
-                          <p className={`text-[9px] font-medium uppercase tracking-tighter mt-0.5 ${isDarkMode ? 'text-blue-400/50' : 'text-slate-400'}`}>Lead: {task.owner}</p>
+                          <div className="flex items-center justify-between">
+                            <h4 className={`text-xs font-bold transition-colors ${isDarkMode ? 'text-blue-100' : 'text-slate-700'} group-hover:text-amber-500`}>{task.name}</h4>
+                            {task.status === 'completed' && task.completionDate && (
+                              <span className="text-[8px] font-black uppercase text-emerald-500 border border-emerald-500/20 px-1.5 py-0.5 rounded-lg shrink-0 ml-2">Done {task.completionDate.split('-').slice(1).join('/')}</span>
+                            )}
+                          </div>
+                          <p className={`text-[9px] font-medium uppercase tracking-tighter mt-1 ${isDarkMode ? 'text-blue-400/50' : 'text-slate-400'}`}>Lead: {task.owner} • <span className="text-amber-500">Due: {task.dueDate}</span></p>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                             {task.assignees.map((assignee, idx) => (
+                               <span key={idx} className={`text-[8px] font-bold px-1.5 py-0.5 rounded-md border ${isDarkMode ? 'bg-blue-900/20 border-blue-800 text-blue-300' : 'bg-slate-100 border-slate-200 text-slate-500'}`}>
+                                 {assignee}
+                               </span>
+                             ))}
+                          </div>
                        </div>
-                       <div className="grid grid-cols-7 gap-1 h-8 relative">
+                       <div className="grid grid-cols-7 gap-1 h-12 relative">
                           <div className="absolute inset-0 grid grid-cols-7 gap-1 pointer-events-none opacity-20">
                              {[...Array(7)].map((_, i) => (
                                 <div key={i} className={`border-r h-full ${i === 6 ? 'border-r-0' : ''} ${isDarkMode ? 'border-blue-700' : 'border-slate-300'}`}></div>
@@ -237,10 +249,10 @@ const Dashboard: React.FC<DashboardProps> = ({ isDarkMode }) => {
                           </div>
 
                           <div 
-                             className={`h-full rounded-lg absolute transition-all duration-500 ease-out group-hover:shadow-lg group-hover:scale-[1.02] flex items-center px-3 overflow-hidden ${
-                                task.status === 'completed' ? 'bg-emerald-600 shadow-sm' :
-                                task.status === 'in-progress' ? 'bg-amber-600 shadow-amber-900/50 shadow-md' :
-                                (isDarkMode ? 'bg-blue-900/40 opacity-40 border border-blue-800' : 'bg-slate-200 opacity-60')
+                             className={`h-full rounded-xl absolute transition-all duration-500 ease-out group-hover:shadow-xl group-hover:scale-[1.01] flex flex-col justify-center px-4 overflow-hidden border ${
+                                task.status === 'completed' ? (isDarkMode ? 'bg-emerald-600/20 border-emerald-500/30' : 'bg-emerald-600 border-emerald-500') :
+                                task.status === 'in-progress' ? (isDarkMode ? 'bg-amber-600/30 border-amber-500/40 shadow-amber-900/50' : 'bg-amber-600 border-amber-500 shadow-md') :
+                                (isDarkMode ? 'bg-blue-900/10 opacity-30 border border-blue-800' : 'bg-slate-200 border-slate-300 opacity-60')
                              }`}
                              style={{
                                 left: `calc(${(task.startDay / 7) * 100}% + 2px)`,
@@ -248,11 +260,18 @@ const Dashboard: React.FC<DashboardProps> = ({ isDarkMode }) => {
                              }}
                           >
                              {task.progress > 0 && (
-                                <div className="absolute left-0 top-0 bottom-0 bg-black/10 transition-all duration-1000" style={{ width: `${task.progress}%` }}></div>
+                                <div className={`absolute left-0 top-0 bottom-0 transition-all duration-1000 ${isDarkMode ? 'bg-white/5' : 'bg-black/10'}`} style={{ width: `${task.progress}%` }}></div>
                              )}
-                             <span className="text-[9px] font-black text-white relative z-10 truncate uppercase tracking-widest">
-                                {task.status === 'in-progress' ? `${task.progress}% Sync` : task.status}
-                             </span>
+                             <div className="relative z-10">
+                                <span className={`text-[9px] font-black uppercase tracking-widest ${task.status === 'completed' && isDarkMode ? 'text-emerald-400' : 'text-white'}`}>
+                                  {task.status === 'in-progress' ? `${task.progress}% Synchronized` : task.status}
+                                </span>
+                                {task.status === 'in-progress' && (
+                                  <div className="w-full h-1 bg-white/20 rounded-full mt-1 overflow-hidden">
+                                     <div className="h-full bg-white transition-all duration-1000" style={{ width: `${task.progress}%` }}></div>
+                                  </div>
+                                )}
+                             </div>
                           </div>
                        </div>
                     </div>
@@ -262,8 +281,8 @@ const Dashboard: React.FC<DashboardProps> = ({ isDarkMode }) => {
         </div>
         
         <div className={`px-8 py-4 border-t flex justify-between items-center ${isDarkMode ? 'bg-blue-950/20 border-blue-800' : 'bg-slate-50/50 border-slate-100'}`}>
-           <p className={`text-[9px] font-bold uppercase tracking-widest italic ${isDarkMode ? 'text-blue-400/50' : 'text-slate-400'}`}>NEXIS AI is dynamically optimizing 12 parallel workstreams based on clinical load telemetry.</p>
-           <button className="text-[9px] font-black text-amber-500 hover:underline uppercase tracking-widest">View Detailed Roadmap</button>
+           <p className={`text-[9px] font-bold uppercase tracking-widest italic ${isDarkMode ? 'text-blue-400/50' : 'text-slate-400'}`}>Strategic accountability matrix verified. 8 cross-functional teams reporting 100% telemetry status.</p>
+           <button className="text-[9px] font-black text-amber-500 hover:underline uppercase tracking-widest">Global Master Schedule</button>
         </div>
       </section>
 

@@ -21,6 +21,7 @@ const MODULES: { id: keyof DynamicRACI; label: string; desc: string }[] = [
   { id: 'rbac', label: 'RBAC Admin', desc: 'Security console for system-wide access control.' },
   { id: 'planning', label: 'Strategic Planning', desc: 'Geospatial health BI and regional modeling.' },
   { id: 'supplyChain', label: 'Supply Chain', desc: 'Integrated inventory and fulfillment command.' },
+  { id: 'pharmaIndustry', label: 'Pharma Industry', desc: 'Industrial MES, ERP, and regional asset management.' },
   { id: 'preventiveHealth', label: 'Preventive Ecosystem', desc: 'Wellness monitoring and proactive maintenance.' },
 ];
 
