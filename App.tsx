@@ -14,6 +14,7 @@ import SupplyChainManager from './components/SupplyChainManager';
 import PharmaIndustryManager from './components/PharmaIndustryManager';
 import PreventiveHealthManager from './components/PreventiveHealthManager';
 import RBACManager from './components/RBACManager';
+import PriceModelManager from './components/PriceModelManager';
 import RightPanel from './components/RightPanel';
 import LandingPage from './components/LandingPage';
 import FloatingChatBot from './components/FloatingChatBot';
@@ -108,6 +109,8 @@ const App: React.FC = () => {
         return <HealthMap />;
       case 'taxonomy':
         return <TaxonomyExplorer />;
+      case 'priceModel':
+        return <PriceModelManager />;
       case 'rbac':
         return <RBACManager raciConfig={raciConfig} onUpdateRACI={setRaciConfig} />;
       default:

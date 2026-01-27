@@ -32,12 +32,21 @@ const MicrosoftLogo = () => (
   </svg>
 );
 
+const StripeLogo = () => (
+  <svg className="w-12 h-5" viewBox="0 0 40 16" fill="#635bff"><path d="M40 8.6c0-2.8-1.3-4.5-3.6-4.5-2.1 0-3.5 1.4-3.5 3.7 0 3.2 2 4.4 4.3 4.4 1 0 2-.2 2.7-.6v-2.1c-.7.3-1.4.4-2.1.4-1.3 0-2.3-.5-2.4-1.8h7c0-.1.1-.3.1-.5zm-4.6-2.1c0-1 .6-1.5 1.1-1.5s1.1.5 1.1 1.5h-2.2zm-9.3-2.2c-1.1 0-1.8.5-2.1.9l-.1-.7h-2.3v10.9h2.5v-7c.4-.7 1.2-1 1.9-1 .1 0 .3 0 .4.1V4.3h-.3zm-6 3.5c0-2-1.3-3.7-3.5-3.7-1.1 0-1.9.5-2.2 1l-.1-.7h-2.3V14h2.5V11.2c.4.6 1.1 1.1 2.3 1.1 2.1 0 3.3-1.6 3.3-3.6zm-2.5.1c0 1.2-.7 1.9-1.5 1.9s-1.4-.7-1.4-1.9c0-1.3.6-2 1.4-2s1.5.7 1.5 2zM11.3 5.4c-.6-.7-1.4-1.1-2.4-1.1-2.1 0-3.4 1.7-3.4 3.7 0 2.2 1.4 3.7 3.5 3.7 1 0 1.7-.3 2.3-.9v3h2.5V4.3h-2.5v1.1zm-2.3 4c-1 0-1.4-.8-1.4-1.7s.5-1.7 1.4-1.7 1.4.8 1.4 1.7-.5 1.7-1.4 1.7zM4.1 3.5V1.2C3.3 1.3 2.5 1.8 2.5 3.3V4h-1.3v2h1.3v4.6c0 1.5.8 2.3 2.2 2.3.5 0 1-.1 1.4-.2v-2c-.3 0-.5.1-.7.1-.5 0-.7-.2-.7-.7V6h1.4V4h-1.4c-.1-.2-.1-.4-.1-.5z" /></svg>
+);
+
+const PaypalLogo = () => (
+  <svg className="w-12 h-6" viewBox="0 0 24 24" fill="#003087"><path d="M20.067 6.378c.496 2.487.132 4.41-1.135 5.892-1.215 1.423-2.937 2.124-5.12 2.115l-.43-.002-.562.001-.84 5.31-.05.31-.01.07h-3.435l.01-.06.84-5.32c.045-.285.29-.49.578-.49H11.5c3.27 0 5.462-1.536 6.136-4.636.216-.99.19-1.834-.075-2.534-.23-.61-.61-.95-1.15-1.16-.27-.11-.64-.2-1.03-.24l.03-.18h3.84c.32 0 .58.21.64.52l.22 1.11z" /><path fill="#009cde" d="M11.5 13.684l-.578 3.655h.442l.578-3.655H11.5z" /></svg>
+);
+
 const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginMode, setLoginMode] = useState<'staff' | 'patient'>('patient');
-  const [isRegistering, setIsRegistering] = useState(false);
+  const [registrationStep, setRegistrationStep] = useState<'login' | 'details' | 'tiers' | 'payment'>('login');
   const [fullName, setFullName] = useState('');
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
 
   const handleLogin = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -84,6 +93,164 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
     });
   };
 
+  const tiers = [
+    { id: 'foundation', name: 'Foundation', price: '$2,499', features: ['Core Dashboard', 'Assistant'] },
+    { id: 'regional', name: 'Regional', price: '$8,999', features: ['All Foundation', 'Fleet Tracking'] },
+    { id: 'enterprise', name: 'Enterprise', price: '$24,500', features: ['All Regional', 'SCM Access'] },
+  ];
+
+  const renderContent = () => {
+    if (registrationStep === 'details') {
+      return (
+        <div className="space-y-6 animate-in slide-in-from-right duration-500">
+          <input 
+            type="text" 
+            placeholder="Legal Identity Name" 
+            required
+            value={fullName}
+            onChange={e => setFullName(e.target.value)}
+            className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-6 py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-[#FF9933]/20 focus:border-[#FF9933]/50 transition-all outline-none"
+          />
+          <input 
+            type="email" 
+            placeholder="ID Vector / Email" 
+            required
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-6 py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-[#FF9933]/20 focus:border-[#FF9933]/50 transition-all outline-none"
+          />
+          <button 
+            onClick={() => setRegistrationStep('tiers')}
+            className="w-full py-5 font-black uppercase tracking-[0.3em] rounded-2xl bg-[#FF9933] text-white hover:bg-[#E68A2E] shadow-xl transition-all"
+          >
+            Select Plan
+          </button>
+          <button onClick={() => setRegistrationStep('login')} className="w-full text-[10px] font-black uppercase text-slate-400 tracking-widest hover:text-slate-600 transition-colors">Back to Sync</button>
+        </div>
+      );
+    }
+
+    if (registrationStep === 'tiers') {
+      return (
+        <div className="space-y-4 animate-in slide-in-from-right duration-500">
+          <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4">Enterprise Tiers</h4>
+          {tiers.map(tier => (
+            <button 
+              key={tier.id}
+              onClick={() => { setSelectedTier(tier.id); setRegistrationStep('payment'); }}
+              className="w-full p-6 bg-white border border-slate-100 rounded-3xl text-left hover:border-[#FF9933] hover:shadow-lg transition-all group"
+            >
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-sm font-black uppercase italic text-slate-900">{tier.name}</span>
+                <span className="text-sm font-black text-[#FF9933]">{tier.price}</span>
+              </div>
+              <p className="text-[10px] text-slate-400 font-medium">{tier.features.join(' • ')}</p>
+            </button>
+          ))}
+          <button onClick={() => setRegistrationStep('details')} className="w-full text-[10px] font-black uppercase text-slate-400 tracking-widest hover:text-slate-600 transition-colors mt-4">Edit Details</button>
+        </div>
+      );
+    }
+
+    if (registrationStep === 'payment') {
+      return (
+        <div className="space-y-6 animate-in slide-in-from-right duration-500">
+          <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex items-center gap-3">
+             <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+             <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Protocol Selected: {selectedTier?.toUpperCase()}</p>
+          </div>
+          <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">Secure Payment Gateway</h4>
+          
+          <div className="grid grid-cols-2 gap-4">
+             {[
+               { id: 'stripe', icon: <StripeLogo />, label: 'Stripe' },
+               { id: 'paypal', icon: <PaypalLogo />, label: 'PayPal' },
+               { id: 'apple', icon: <div className="flex items-center gap-1"><AppleLogo /><span className="font-bold text-[10px] text-slate-900">Pay</span></div>, label: 'Apple Pay' },
+               { id: 'google', icon: <div className="flex items-center gap-1"><GoogleLogo /><span className="font-bold text-[10px] text-slate-900">Pay</span></div>, label: 'Google Pay' },
+             ].map(gate => (
+               <button 
+                key={gate.id}
+                onClick={() => handleLogin()}
+                className="flex flex-col items-center justify-center p-6 bg-white border border-slate-100 rounded-3xl hover:border-[#FF9933] hover:shadow-xl transition-all group"
+               >
+                 <div className="mb-2 group-hover:scale-110 transition-transform">
+                   {gate.icon}
+                 </div>
+                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest group-hover:text-[#FF9933] transition-colors">{gate.label}</span>
+               </button>
+             ))}
+          </div>
+
+          <button onClick={() => setRegistrationStep('tiers')} className="w-full text-[10px] font-black uppercase text-slate-400 tracking-widest hover:text-slate-600 transition-colors mt-4 text-center">Change Tier</button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {loginMode === 'staff' ? (
+          <button 
+            onClick={() => handleSocialAuth('Microsoft')}
+            className="w-full py-5 bg-[#F8FAFC] border border-slate-200 text-slate-900 font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center gap-4 group"
+          >
+            <MicrosoftLogo />
+            AD SSO Pipeline
+          </button>
+        ) : (
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            {[
+              { id: 'Google', component: <GoogleLogo /> },
+              { id: 'Apple', component: <div className="text-slate-900"><AppleLogo /></div> },
+              { id: 'Microsoft', component: <MicrosoftLogo /> }
+            ].map((soc) => (
+              <button 
+                key={soc.id}
+                onClick={() => handleSocialAuth(soc.id as any)}
+                className="flex flex-col items-center justify-center p-5 bg-[#F8FAFC] border border-slate-200 rounded-[2rem] hover:bg-white hover:border-[#FF9933] hover:shadow-lg transition-all group"
+              >
+                <div className="group-hover:scale-110 transition-transform mb-2">
+                  {soc.component}
+                </div>
+                <span className="text-[8px] font-black uppercase text-slate-500 group-hover:text-[#FF9933] transition-colors">{soc.id}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="relative py-4 flex items-center">
+          <div className="flex-grow border-t border-slate-100"></div>
+          <span className="flex-shrink mx-4 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">
+            {loginMode === 'staff' ? 'Admin Gateway' : 'Identity Sync'}
+          </span>
+          <div className="flex-grow border-t border-slate-100"></div>
+        </div>
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <input 
+            type="email" 
+            placeholder="ID Vector / Email" 
+            required
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-6 py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-[#FF9933]/20 focus:border-[#FF9933]/50 transition-all outline-none"
+          />
+          <input 
+            type="password" 
+            placeholder="Security Token" 
+            required
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-6 py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-[#FF9933]/20 focus:border-[#FF9933]/50 transition-all outline-none"
+          />
+          <button type="submit" className={`w-full py-5 font-black uppercase tracking-[0.3em] rounded-2xl transition-all shadow-xl group relative overflow-hidden ${loginMode === 'staff' ? 'bg-[#FF9933] text-white hover:bg-[#E68A2E]' : 'bg-slate-900 text-white hover:bg-slate-800'}`}>
+            <span className="relative z-10">Initiate Neural Sync</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          </button>
+        </form>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-[#FFF8F0] text-slate-900 flex flex-col overflow-x-hidden relative font-['Inter']">
       {/* Background Image Layer */}
@@ -126,13 +293,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
         {/* Auth Toggle */}
         <div className="flex bg-white/60 p-1.5 rounded-2xl border border-[#FF9933]/10 backdrop-blur-2xl mb-12 shadow-xl">
           <button 
-            onClick={() => { setLoginMode('patient'); setIsRegistering(false); }}
-            className={`px-10 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${loginMode === 'patient' && !isRegistering ? 'bg-white text-slate-900 shadow-md border border-[#FF9933]/10' : 'text-slate-500 hover:text-slate-900'}`}
+            onClick={() => { setLoginMode('patient'); setRegistrationStep('login'); }}
+            className={`px-10 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${loginMode === 'patient' && registrationStep === 'login' ? 'bg-white text-slate-900 shadow-md border border-[#FF9933]/10' : 'text-slate-500 hover:text-slate-900'}`}
           >
             Patient Portal
           </button>
           <button 
-            onClick={() => { setLoginMode('staff'); setIsRegistering(false); }}
+            onClick={() => { setLoginMode('staff'); setRegistrationStep('login'); }}
             className={`px-10 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${loginMode === 'staff' ? 'bg-[#FF9933] text-white shadow-[0_10px_25px_rgba(255,153,51,0.3)]' : 'text-slate-500 hover:text-slate-900'}`}
           >
             Clinical Command
@@ -165,92 +332,22 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
           <div className={`lg:col-span-4 p-10 rounded-[3.5rem] border transition-all duration-700 text-left backdrop-blur-3xl shadow-2xl ${loginMode === 'staff' ? 'bg-white/95 border-[#FF9933]/30' : 'bg-white/90 border-[#FF9933]/20'}`}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-black uppercase tracking-widest italic text-slate-900">
-                {loginMode === 'staff' ? 'IAM Gateway' : isRegistering ? 'Enroll' : 'Sync Bio-ID'}
+                {registrationStep === 'payment' ? 'Authorize Sync' : registrationStep === 'tiers' ? 'Configure Tier' : registrationStep === 'details' ? 'Enroll' : loginMode === 'staff' ? 'IAM Gateway' : 'Sync Bio-ID'}
               </h3>
-              {loginMode === 'patient' && (
+              {loginMode === 'patient' && registrationStep === 'login' && (
                 <button 
-                  onClick={() => setIsRegistering(!isRegistering)}
+                  onClick={() => setRegistrationStep('details')}
                   className="text-[10px] font-black uppercase text-[#FF9933] hover:underline underline-offset-4"
                 >
-                  {isRegistering ? 'Back to Sync' : 'New Identity?'}
+                  New Identity?
                 </button>
               )}
             </div>
             <p className="text-xs mb-10 font-medium text-slate-500 leading-relaxed">
-              {loginMode === 'staff' ? 'Enterprise Secure Access for Clinical Personnel' : isRegistering ? 'Create your global healthcare biometric profile' : 'Access your longitudinal health history instantly'}
+              {registrationStep === 'payment' ? 'Complete transaction to activate biometric profile' : registrationStep === 'tiers' ? 'Select your healthcare access level' : registrationStep === 'details' ? 'Create your global healthcare biometric profile' : loginMode === 'staff' ? 'Enterprise Secure Access for Clinical Personnel' : 'Access your longitudinal health history instantly'}
             </p>
 
-            <div className="space-y-6">
-              {loginMode === 'staff' ? (
-                <button 
-                  onClick={() => handleSocialAuth('Microsoft')}
-                  className="w-full py-5 bg-[#F8FAFC] border border-slate-200 text-slate-900 font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center gap-4 group"
-                >
-                  <MicrosoftLogo />
-                  AD SSO Pipeline
-                </button>
-              ) : (
-                <div className="grid grid-cols-3 gap-4 mb-8">
-                  {[
-                    { id: 'Google', component: <GoogleLogo /> },
-                    { id: 'Apple', component: <div className="text-slate-900"><AppleLogo /></div> },
-                    { id: 'Microsoft', component: <MicrosoftLogo /> }
-                  ].map((soc) => (
-                    <button 
-                      key={soc.id}
-                      onClick={() => handleSocialAuth(soc.id as any)}
-                      className="flex flex-col items-center justify-center p-5 bg-[#F8FAFC] border border-slate-200 rounded-[2rem] hover:bg-white hover:border-[#FF9933] hover:shadow-lg transition-all group"
-                    >
-                      <div className="group-hover:scale-110 transition-transform mb-2">
-                        {soc.component}
-                      </div>
-                      <span className="text-[8px] font-black uppercase text-slate-500 group-hover:text-[#FF9933] transition-colors">{soc.id}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              <div className="relative py-4 flex items-center">
-                <div className="flex-grow border-t border-slate-100"></div>
-                <span className="flex-shrink mx-4 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">
-                  {isRegistering ? 'Primary Sync' : 'Clinical Override'}
-                </span>
-                <div className="flex-grow border-t border-slate-100"></div>
-              </div>
-
-              <form onSubmit={handleLogin} className="space-y-4">
-                {isRegistering && (
-                  <input 
-                    type="text" 
-                    placeholder="Legal Identity Name" 
-                    required
-                    value={fullName}
-                    onChange={e => setFullName(e.target.value)}
-                    className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-6 py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-[#FF9933]/20 focus:border-[#FF9933]/50 transition-all outline-none"
-                  />
-                )}
-                <input 
-                  type="email" 
-                  placeholder="ID Vector / Email" 
-                  required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-6 py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-[#FF9933]/20 focus:border-[#FF9933]/50 transition-all outline-none"
-                />
-                <input 
-                  type="password" 
-                  placeholder="Security Token" 
-                  required
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-6 py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-[#FF9933]/20 focus:border-[#FF9933]/50 transition-all outline-none"
-                />
-                <button type="submit" className={`w-full py-5 font-black uppercase tracking-[0.3em] rounded-2xl transition-all shadow-xl group relative overflow-hidden ${loginMode === 'staff' ? 'bg-[#FF9933] text-white hover:bg-[#E68A2E]' : 'bg-slate-900 text-white hover:bg-slate-800'}`}>
-                  <span className="relative z-10">{isRegistering ? 'Commit Profile' : 'Initiate Neural Sync'}</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                </button>
-              </form>
-            </div>
+            {renderContent()}
           </div>
 
           {/* Visual Column Right */}

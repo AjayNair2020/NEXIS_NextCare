@@ -27,6 +27,7 @@ export interface RACIMapping {
   supplyChain: Role[];
   preventiveHealth: Role[];
   pharmaIndustry: Role[];
+  priceModel: Role[];
 }
 
 export interface ProgramTask {

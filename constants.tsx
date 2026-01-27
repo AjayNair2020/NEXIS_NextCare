@@ -16,7 +16,8 @@ export const INITIAL_RACI: DynamicRACI = {
   planning: ['SUPER_ADMIN', 'LOGISTICS_CHIEF'],
   supplyChain: ['SUPER_ADMIN', 'LOGISTICS_CHIEF'],
   preventiveHealth: ['SUPER_ADMIN', 'CLINICAL_LEAD', 'LOGISTICS_CHIEF', 'PATIENT'],
-  pharmaIndustry: ['SUPER_ADMIN', 'LOGISTICS_CHIEF']
+  pharmaIndustry: ['SUPER_ADMIN', 'LOGISTICS_CHIEF'],
+  priceModel: ['SUPER_ADMIN', 'LOGISTICS_CHIEF', 'CLINICAL_LEAD']
 };
 
 export const MOCK_COMPLIANCE_KPIs: ComplianceKPI[] = [
