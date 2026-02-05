@@ -45,6 +45,8 @@ const App: React.FC = () => {
     setUser(null);
   };
 
+  const toggleGISBot = () => setIsGISBotOpen(prev => !prev);
+
   if (!user) {
     return <LandingPage onLogin={handleLogin} />;
   }
@@ -96,16 +98,16 @@ const App: React.FC = () => {
                   <p className="text-[10px] text-slate-400 font-bold">Syncing regional logistics with secondary analyzer.</p>
                </div>
                <button 
-                onClick={() => setIsGISBotOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20"
+                onClick={toggleGISBot}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg ${isGISBotOpen ? 'bg-amber-600 text-white shadow-amber-600/30' : 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600'}`}
                >
                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
-                 Launch GeoBot Analyzer
+                 {isGISBotOpen ? 'Minimize GeoBot' : 'Launch GeoBot Analyzer'}
                </button>
             </div>
             <OperationsManager />
             <div className="h-[400px] rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
-               <HealthMap variant="operations" />
+               <HealthMap variant="operations" isAnalyzerOpen={isGISBotOpen} onToggleAnalyzer={toggleGISBot} />
             </div>
           </div>
         );
@@ -120,7 +122,7 @@ const App: React.FC = () => {
       case 'preventiveHealth':
         return <PreventiveHealthManager isDarkMode={isDarkMode} />;
       case 'map':
-        return <HealthMap />;
+        return <HealthMap isAnalyzerOpen={isGISBotOpen} onToggleAnalyzer={toggleGISBot} />;
       case 'taxonomy':
         return <TaxonomyExplorer />;
       case 'priceModel':
@@ -178,7 +180,7 @@ const App: React.FC = () => {
             <div className="flex items-center gap-4">
               {/* GIS Analyzer Link in Header */}
               <button 
-                onClick={() => setIsGISBotOpen(!isGISBotOpen)}
+                onClick={toggleGISBot}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 group ${
                   isGISBotOpen 
                     ? 'bg-amber-500 border-amber-400 text-white shadow-[0_10px_25px_rgba(245,158,11,0.2)]' 
@@ -233,7 +235,7 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Global GeoBot Analyzer Window - Explicitly Outside the Map Canvas */}
+        {/* Global GeoBot Analyzer Window - Outside the Map Window */}
         <div 
           className={`fixed bottom-0 z-[100] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
             isGISBotOpen 
@@ -273,7 +275,7 @@ const App: React.FC = () => {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                     </button>
                     <button 
-                      onClick={() => setIsGISBotOpen(false)}
+                      onClick={toggleGISBot}
                       className="w-10 h-10 rounded-xl flex items-center justify-center text-rose-400 hover:bg-rose-500/10 transition-all border border-rose-500/20"
                       title="Minimize Analyzer"
                     >

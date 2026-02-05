@@ -8,6 +8,8 @@ interface HealthMapProps {
   variant?: 'standard' | 'lineage' | 'dashboard' | 'operations' | 'optimizer' | 'journey' | 'appointments';
   selectedAreaId?: string | null;
   activeAppointment?: Appointment | null;
+  isAnalyzerOpen?: boolean;
+  onToggleAnalyzer?: () => void;
 }
 
 type MapLayerType = 'base' | 'satellite' | 'land' | 'roads' | 'country' | 'cities';
@@ -58,7 +60,13 @@ const MAP_LAYERS: MapLayerConfig[] = [
   },
 ];
 
-const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAreaId, activeAppointment }) => {
+const HealthMap: React.FC<HealthMapProps> = ({ 
+  variant = 'standard', 
+  selectedAreaId, 
+  activeAppointment,
+  isAnalyzerOpen,
+  onToggleAnalyzer
+}) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const baseTileLayer = useRef<any>(null);
@@ -90,13 +98,11 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
 
     renderLayers();
     
-    // Invalidate size when layout changes to fix gray box issues
     if (mapInstance.current) {
       setTimeout(() => mapInstance.current.invalidateSize(), 300);
     }
   }, [viewMode, variant, showTraffic, selectedAreaId, activeAppointment, activeBaseLayer]);
 
-  // Handle Base Layer Switch
   useEffect(() => {
     if (mapInstance.current && baseTileLayer.current) {
       const config = MAP_LAYERS.find(l => l.id === activeBaseLayer) || MAP_LAYERS[0];
@@ -113,7 +119,6 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
   const clearLayers = () => {
     if (mapInstance.current) {
       mapInstance.current.eachLayer((layer: any) => {
-        // Keep the tile layer, remove everything else
         if (!layer._url || layer !== baseTileLayer.current) {
           mapInstance.current.removeLayer(layer);
         }
@@ -534,6 +539,23 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
             <div ref={mapContainer} className="w-full h-full" />
             
             <div className="absolute right-6 top-6 z-[1000] flex flex-col items-end gap-3">
+               {/* GeoBot Spatial Analyzer Button ON Map */}
+               {onToggleAnalyzer && (
+                  <button 
+                    onClick={onToggleAnalyzer}
+                    className={`bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-2xl border-2 transition-all duration-300 group ${isAnalyzerOpen ? 'border-amber-500 bg-amber-50 text-amber-600 ring-4 ring-amber-500/10' : 'border-slate-100 text-amber-500 hover:border-amber-200 hover:scale-105'}`}
+                    title="Launch Spatial Intelligence Analyzer"
+                  >
+                    <svg className={`w-6 h-6 ${isAnalyzerOpen ? 'animate-pulse' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    <div className="absolute right-full mr-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                      Analyzer {isAnalyzerOpen ? 'Active' : 'Offline'}
+                    </div>
+                  </button>
+               )}
+
                {/* Map Layer Intelligence Menu */}
                <div className="relative">
                   <button 
