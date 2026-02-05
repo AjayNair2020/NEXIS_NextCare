@@ -50,41 +50,54 @@ const Dashboard: React.FC<DashboardProps> = ({ isDarkMode }) => {
             <h2 className={`text-3xl font-bold tracking-tight transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>Welcome back, Alex!</h2>
             <p className={`${isDarkMode ? 'text-blue-300/70' : 'text-slate-500'} font-medium`}>System sync complete. Dual integrity active.</p>
           </div>
-          <div className="flex bg-white/10 backdrop-blur-md p-1 rounded-2xl border border-white/10 shadow-xl overflow-hidden">
-            <button 
-              onClick={() => setActiveTab('clinical')}
-              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'clinical' ? 'bg-amber-500 text-white shadow-lg' : 'text-slate-400 hover:text-amber-500'}`}
-            >
-              Clinical View
-            </button>
-            <button 
-              onClick={() => setActiveTab('safety')}
-              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'safety' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-blue-500'}`}
-            >
-              AI Safety
-            </button>
+          <div className="flex items-center gap-3">
+            <div className="flex bg-white/10 backdrop-blur-md p-1 rounded-2xl border border-white/10 shadow-xl overflow-hidden">
+              <button 
+                onClick={() => setActiveTab('clinical')}
+                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'clinical' ? 'bg-amber-500 text-white shadow-lg' : 'text-slate-400 hover:text-amber-500'}`}
+              >
+                Clinical View
+              </button>
+              <button 
+                onClick={() => setActiveTab('safety')}
+                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'safety' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-blue-500'}`}
+              >
+                AI Safety
+              </button>
+            </div>
           </div>
         </div>
 
         {activeTab === 'clinical' && (
           <div className={`p-6 rounded-[2.5rem] border shadow-xl relative overflow-hidden transition-all duration-500 animate-in slide-in-from-top-4 ${isDarkMode ? 'bg-[#1a263e] border-blue-800' : 'bg-white border-slate-100'}`}>
             <div className="absolute -right-8 -top-8 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl"></div>
-            <div className="flex items-start gap-4 relative z-10">
-                <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/20 shrink-0">
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <div className="flex items-start justify-between relative z-10">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/20 shrink-0">
+                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                  </div>
+                  <div>
+                    <h3 className={`text-xs font-black uppercase tracking-widest mb-1 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>NEXIS Proactive Briefing</h3>
+                    {isBriefingLoading ? (
+                      <div className="space-y-2 animate-pulse py-1">
+                          <div className="h-3 bg-slate-200/20 rounded w-64"></div>
+                          <div className="h-3 bg-slate-200/20 rounded w-48"></div>
+                      </div>
+                    ) : (
+                      <p className={`text-sm font-medium leading-relaxed italic ${isDarkMode ? 'text-blue-50' : 'text-slate-700'}`}>
+                          "{briefing}"
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <h3 className={`text-xs font-black uppercase tracking-widest mb-1 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>NEXIS Proactive Briefing</h3>
-                  {isBriefingLoading ? (
-                    <div className="space-y-2 animate-pulse py-1">
-                        <div className="h-3 bg-slate-200/20 rounded w-64"></div>
-                        <div className="h-3 bg-slate-200/20 rounded w-48"></div>
-                    </div>
-                  ) : (
-                    <p className={`text-sm font-medium leading-relaxed italic ${isDarkMode ? 'text-blue-50' : 'text-slate-700'}`}>
-                        "{briefing}"
-                    </p>
-                  )}
+                <div className="hidden lg:flex items-center gap-2">
+                   <div className="flex flex-col text-right">
+                      <span className="text-[9px] font-black uppercase text-emerald-500">Live Telemetry</span>
+                      <span className="text-[8px] font-bold text-slate-400">Node Cluster 01</span>
+                   </div>
+                   <div className="w-10 h-10 rounded-full border-2 border-emerald-500/20 flex items-center justify-center">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div>
+                   </div>
                 </div>
             </div>
           </div>
