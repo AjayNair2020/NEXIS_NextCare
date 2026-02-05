@@ -55,6 +55,24 @@ export interface ComplianceKPI {
   description: string;
 }
 
+export interface SIEMEvent {
+  id: string;
+  timestamp: string;
+  type: 'access' | 'network' | 'malware' | 'integrity';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  source: string;
+  description: string;
+  status: 'flagged' | 'mitigated' | 'investigating';
+}
+
+export interface NISTCategory {
+  id: 'identify' | 'protect' | 'detect' | 'respond' | 'recover';
+  name: string;
+  score: number;
+  description: string;
+  controls: number;
+}
+
 export interface EHRRecord {
   id: string;
   patientId: string;

@@ -155,6 +155,24 @@ export const getMedicationSafetyReview = async (meds: any[]): Promise<string> =>
   }
 };
 
+export const analyzeSecurityPosture = async (events: any[], nistScores: any[]): Promise<string> => {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Analyze these SIEM events: ${JSON.stringify(events)} and NIST CSF scores: ${JSON.stringify(nistScores)}. 
+      Provide a concise summary of the current security posture and any immediate actions required. Tone: Expert, urgent, technical.`,
+      config: {
+        systemInstruction: "You are NEXIS Sentinel, the cybersecurity intelligence core of NextCare AI.",
+        temperature: 0.3,
+      }
+    });
+    return response.text || "Security posture nominal. Sentinel monitoring active.";
+  } catch (error) {
+    return "Sentinel: Security intelligence link interrupted.";
+  }
+};
+
 export const optimizeClinicalNote = async (note: string): Promise<string> => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });

@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { MOCK_HEALTH_METRICS, MOCK_APPOINTMENTS, MOCK_DOCTORS, MOCK_PROGRAMS, MOCK_EHR_RECORDS } from '../constants';
 import HealthMap from './HealthMap';
 import { getDailyBriefing } from '../services/gemini';
+import AISafetyIntelligence from './AISafetyIntelligence';
 
 interface DashboardProps {
   isDarkMode?: boolean;
@@ -13,6 +14,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isDarkMode }) => {
   const [selectedDate, setSelectedDate] = useState('2023-10-24');
   const [briefing, setBriefing] = useState<string | null>(null);
   const [isBriefingLoading, setIsBriefingLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'clinical' | 'safety'>('clinical');
 
   useEffect(() => {
     const fetchBriefing = async () => {
@@ -46,389 +48,406 @@ const Dashboard: React.FC<DashboardProps> = ({ isDarkMode }) => {
         <div className="flex justify-between items-end">
           <div>
             <h2 className={`text-3xl font-bold tracking-tight transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>Welcome back, Alex!</h2>
-            <p className={`${isDarkMode ? 'text-blue-300/70' : 'text-slate-500'} font-medium`}>Your physiological vectors are within optimal range. System sync complete.</p>
+            <p className={`${isDarkMode ? 'text-blue-300/70' : 'text-slate-500'} font-medium`}>System sync complete. Dual integrity active.</p>
           </div>
-          <div className={`px-4 py-2 rounded-2xl shadow-sm border flex items-center gap-2 group transition-all cursor-default ${isDarkMode ? 'bg-[#23324a] border-blue-800 hover:border-amber-500/50 shadow-lg' : 'bg-white border-slate-100 hover:border-amber-200'}`}>
-            <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.8)]"></div>
-            <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-300' : 'text-slate-600'}`}>Live Bio-Telemetry</span>
+          <div className="flex bg-white/10 backdrop-blur-md p-1 rounded-2xl border border-white/10 shadow-xl overflow-hidden">
+            <button 
+              onClick={() => setActiveTab('clinical')}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'clinical' ? 'bg-amber-500 text-white shadow-lg' : 'text-slate-400 hover:text-amber-500'}`}
+            >
+              Clinical View
+            </button>
+            <button 
+              onClick={() => setActiveTab('safety')}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'safety' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-blue-500'}`}
+            >
+              AI Safety
+            </button>
           </div>
         </div>
 
-        {/* AI Bio-Narrative Briefing */}
-        <div className={`p-6 rounded-[2.5rem] border shadow-xl relative overflow-hidden transition-all duration-500 ${isDarkMode ? 'bg-[#1a263e] border-blue-800' : 'bg-white border-slate-100'}`}>
-           <div className="absolute -right-8 -top-8 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl"></div>
-           <div className="flex items-start gap-4 relative z-10">
-              <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/20 shrink-0">
-                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-              </div>
-              <div>
-                 <h3 className={`text-xs font-black uppercase tracking-widest mb-1 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>NEXIS Proactive Briefing</h3>
-                 {isBriefingLoading ? (
-                   <div className="space-y-2 animate-pulse py-1">
-                      <div className="h-3 bg-slate-200/20 rounded w-64"></div>
-                      <div className="h-3 bg-slate-200/20 rounded w-48"></div>
-                   </div>
-                 ) : (
-                   <p className={`text-sm font-medium leading-relaxed italic ${isDarkMode ? 'text-blue-50' : 'text-slate-700'}`}>
-                      "{briefing}"
-                   </p>
-                 )}
-              </div>
-           </div>
-        </div>
+        {activeTab === 'clinical' && (
+          <div className={`p-6 rounded-[2.5rem] border shadow-xl relative overflow-hidden transition-all duration-500 animate-in slide-in-from-top-4 ${isDarkMode ? 'bg-[#1a263e] border-blue-800' : 'bg-white border-slate-100'}`}>
+            <div className="absolute -right-8 -top-8 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl"></div>
+            <div className="flex items-start gap-4 relative z-10">
+                <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/20 shrink-0">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                </div>
+                <div>
+                  <h3 className={`text-xs font-black uppercase tracking-widest mb-1 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>NEXIS Proactive Briefing</h3>
+                  {isBriefingLoading ? (
+                    <div className="space-y-2 animate-pulse py-1">
+                        <div className="h-3 bg-slate-200/20 rounded w-64"></div>
+                        <div className="h-3 bg-slate-200/20 rounded w-48"></div>
+                    </div>
+                  ) : (
+                    <p className={`text-sm font-medium leading-relaxed italic ${isDarkMode ? 'text-blue-50' : 'text-slate-700'}`}>
+                        "{briefing}"
+                    </p>
+                  )}
+                </div>
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Heart Rate Card */}
-        <div className={`p-6 rounded-[2rem] border hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group ${isDarkMode ? 'bg-[#23324a] border-blue-800 shadow-[0_10px_30px_rgba(0,0,0,0.2)]' : 'bg-white border-slate-100 shadow-sm'}`}>
-          <div className="flex justify-between items-start mb-4">
-            <div className={`w-12 h-12 bg-amber-500 text-white rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg animate-heartbeat`}>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            </div>
-            <div className={`px-2 py-1 rounded-lg flex items-center gap-1.5 border ${isDarkMode ? 'bg-amber-950/20 border-amber-500/30' : 'bg-amber-50 border-amber-100'}`}>
-              <div className="w-1 h-1 bg-amber-500 rounded-full animate-pulse"></div>
-              <span className={`text-[8px] font-black uppercase tracking-tighter ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>Live Sensor</span>
-            </div>
-          </div>
-          <p className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300/50' : 'text-slate-400'}`}>Heart Rate</p>
-          <div className="flex items-baseline gap-1.5 mt-2">
-            <span className={`text-4xl font-black transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>{currentHeartRate}</span>
-            <span className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-blue-300/30' : 'text-slate-400'}`}>bpm</span>
-          </div>
-          <div className="h-12 mt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={MOCK_HEALTH_METRICS}>
-                <Area type="monotone" dataKey="heartRate" stroke="#f59e0b" fill="#fef3c7" fillOpacity={isDarkMode ? 0.05 : 0.4} strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Sleep Quality Card */}
-        <div className={`p-6 rounded-[2rem] border hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group ${isDarkMode ? 'bg-[#23324a] border-blue-800 shadow-[0_10px_30px_rgba(0,0,0,0.2)]' : 'bg-white border-slate-100 shadow-sm'}`}>
-          <div className="flex justify-between items-start mb-4">
-            <div className={`w-12 h-12 bg-blue-500 text-white rounded-2xl flex items-center justify-center transition-transform group-hover:rotate-12 shadow-lg`}>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            </div>
-            <div className="relative w-8 h-8">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="3" fill="transparent" className={isDarkMode ? 'text-blue-900/50' : 'text-slate-100'} />
-                  <circle cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="3" fill="transparent" strokeDasharray={88} strokeDashoffset={88 * (1 - currentSleep / 10)} className="text-blue-500 transition-all duration-1000" />
-                </svg>
-            </div>
-          </div>
-          <p className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300/50' : 'text-slate-400'}`}>Sleep Quality</p>
-          <div className="flex items-baseline gap-1.5 mt-2">
-            <span className={`text-4xl font-black transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>{currentSleep}</span>
-            <span className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-blue-300/30' : 'text-slate-400'}`}>hours</span>
-          </div>
-          <p className="text-[10px] font-bold text-emerald-500 uppercase mt-4">92% Restored</p>
-          <div className={`w-full h-1 rounded-full mt-2 overflow-hidden ${isDarkMode ? 'bg-blue-900/50' : 'bg-slate-100'}`}>
-              <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: '92%' }}></div>
-          </div>
-        </div>
-
-        {/* Steps Card */}
-        <div className={`p-6 rounded-[2rem] border hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group ${isDarkMode ? 'bg-[#23324a] border-blue-800 shadow-[0_10px_30px_rgba(0,0,0,0.2)]' : 'bg-white border-slate-100 shadow-sm'}`}>
-          <div className="flex justify-between items-start mb-4">
-            <div className={`w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center transition-transform group-hover:translate-x-1 shadow-lg`}>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-            </div>
-            <span className={`text-[10px] font-black px-2 py-1 rounded-lg ${isDarkMode ? 'text-emerald-400 bg-emerald-900/40' : 'text-emerald-600 bg-emerald-50'}`}>+12%</span>
-          </div>
-          <p className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300/50' : 'text-slate-400'}`}>Daily Steps</p>
-          <div className="flex items-baseline gap-1.5 mt-2">
-            <span className={`text-4xl font-black transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>{currentSteps.toLocaleString()}</span>
-            <span className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-blue-300/30' : 'text-slate-400'}`}>steps</span>
-          </div>
-          <div className="h-12 mt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={MOCK_HEALTH_METRICS}>
-                <Area type="step" dataKey="steps" stroke="#10b981" fill="#dcfce7" fillOpacity={isDarkMode ? 0.05 : 0.4} strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Blood Pressure Card */}
-        <div className={`p-6 rounded-[2rem] border hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group ${isDarkMode ? 'bg-[#23324a] border-blue-800 shadow-[0_10px_30px_rgba(0,0,0,0.2)]' : 'bg-white border-slate-100 shadow-sm'}`}>
-          <div className="flex justify-between items-start mb-4">
-            <div className={`w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center transition-transform group-hover:scale-95 shadow-lg`}>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-            <span className={`text-[10px] font-black px-2 py-1 rounded-lg ${isDarkMode ? 'text-blue-300/50 bg-blue-900/40 border border-blue-800' : 'text-slate-400 bg-slate-50 border border-slate-100'}`}>Stable</span>
-          </div>
-          <p className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300/50' : 'text-slate-400'}`}>Blood Pressure</p>
-          <div className="flex items-baseline gap-1.5 mt-2">
-            <span className={`text-3xl font-black transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>118/76</span>
-            <span className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-blue-300/30' : 'text-slate-400'}`}>mmHg</span>
-          </div>
-          <div className="h-12 mt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={MOCK_HEALTH_METRICS}>
-                <Line type="monotone" dataKey="bloodPressure" stroke="#f43f5e" strokeWidth={3} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Program Lifecycle Planner */}
-      <section className={`rounded-[2.5rem] border overflow-hidden transition-all duration-500 ${isDarkMode ? 'bg-[#23324a] border-blue-800 shadow-[0_20px_50px_rgba(0,0,0,0.3)]' : 'bg-white border-slate-100 shadow-sm'}`}>
-        <div className={`p-8 border-b flex justify-between items-center ${isDarkMode ? 'border-blue-800' : 'border-slate-50'}`}>
-           <div>
-              <h3 className={`text-xl font-bold flex items-center gap-3 transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>
-                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-amber-500/20 text-amber-500 border border-amber-500/20' : 'bg-amber-50 text-amber-500'}`}>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" /></svg>
+      {activeTab === 'safety' ? (
+        <AISafetyIntelligence isDarkMode={isDarkMode} />
+      ) : (
+        <>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in duration-500">
+            {/* Heart Rate Card */}
+            <div className={`p-6 rounded-[2rem] border hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group ${isDarkMode ? 'bg-[#23324a] border-blue-800 shadow-[0_10px_30px_rgba(0,0,0,0.2)]' : 'bg-white border-slate-100 shadow-sm'}`}>
+              <div className="flex justify-between items-start mb-4">
+                <div className={`w-12 h-12 bg-amber-500 text-white rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg animate-heartbeat`}>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
                 </div>
-                NEXIS Program Lifecycle Planner
-              </h3>
-              <p className={`text-sm font-medium mt-1 ${isDarkMode ? 'text-blue-300/40' : 'text-slate-500'}`}>Strategic roadmap with RACI assignees and deadline tracking</p>
-           </div>
-           <div className="flex gap-4">
-              <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                 <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300' : 'text-slate-400'}`}>Active</span>
-              </div>
-              <div className="flex items-center gap-2">
-                 <div className={`w-2 h-2 rounded-full ${isDarkMode ? 'bg-blue-700' : 'bg-slate-300'}`}></div>
-                 <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300' : 'text-slate-400'}`}>Scheduled</span>
-              </div>
-           </div>
-        </div>
-
-        <div className="p-8 overflow-x-auto custom-scrollbar">
-           <div className="min-w-[900px]">
-              {/* Timeline Header */}
-              <div className={`grid grid-cols-[300px_1fr] border-b pb-4 mb-4 ${isDarkMode ? 'border-blue-800' : 'border-slate-100'}`}>
-                 <div className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400/60' : 'text-slate-400'}`}>Strategic Unit / RACI Assignees</div>
-                 <div className="grid grid-cols-7 gap-1 text-center">
-                    {daysOfWeek.map((day, i) => (
-                       <div key={i} className={`text-[10px] font-black uppercase tracking-widest ${i === 1 ? 'text-amber-500' : (isDarkMode ? 'text-blue-400/60' : 'text-slate-400')}`}>
-                          {day}
-                          {i === 1 && <div className="text-[8px] mt-0.5 font-black uppercase">Current</div>}
-                       </div>
-                    ))}
-                 </div>
-              </div>
-
-              {/* Task Rows */}
-              <div className="space-y-6">
-                 {MOCK_PROGRAMS.map((task) => (
-                    <div key={task.id} className="grid grid-cols-[300px_1fr] items-start group">
-                       <div className="pr-4">
-                          <div className="flex items-center justify-between">
-                            <h4 className={`text-xs font-bold transition-colors ${isDarkMode ? 'text-blue-100' : 'text-slate-700'} group-hover:text-amber-500`}>{task.name}</h4>
-                            {task.status === 'completed' && task.completionDate && (
-                              <span className="text-[8px] font-black uppercase text-emerald-500 border border-emerald-500/20 px-1.5 py-0.5 rounded-lg shrink-0 ml-2">Done {task.completionDate.split('-').slice(1).join('/')}</span>
-                            )}
-                          </div>
-                          <p className={`text-[9px] font-medium uppercase tracking-tighter mt-1 ${isDarkMode ? 'text-blue-400/50' : 'text-slate-400'}`}>Lead: {task.owner} • <span className="text-amber-500">Due: {task.dueDate}</span></p>
-                          <div className="flex flex-wrap gap-1 mt-2">
-                             {task.assignees.map((assignee, idx) => (
-                               <span key={idx} className={`text-[8px] font-bold px-1.5 py-0.5 rounded-md border ${isDarkMode ? 'bg-blue-900/20 border-blue-800 text-blue-300' : 'bg-slate-100 border-slate-200 text-slate-500'}`}>
-                                 {assignee}
-                               </span>
-                             ))}
-                          </div>
-                       </div>
-                       <div className="grid grid-cols-7 gap-1 h-12 relative">
-                          <div className="absolute inset-0 grid grid-cols-7 gap-1 pointer-events-none opacity-20">
-                             {[...Array(7)].map((_, i) => (
-                                <div key={i} className={`border-r h-full ${i === 6 ? 'border-r-0' : ''} ${isDarkMode ? 'border-blue-700' : 'border-slate-300'}`}></div>
-                             ))}
-                          </div>
-
-                          <div 
-                             className={`h-full rounded-xl absolute transition-all duration-500 ease-out group-hover:shadow-xl group-hover:scale-[1.01] flex flex-col justify-center px-4 overflow-hidden border ${
-                                task.status === 'completed' ? (isDarkMode ? 'bg-emerald-600/20 border-emerald-500/30' : 'bg-emerald-600 border-emerald-500') :
-                                task.status === 'in-progress' ? (isDarkMode ? 'bg-amber-600/30 border-amber-500/40 shadow-amber-900/50' : 'bg-amber-600 border-amber-500 shadow-md') :
-                                (isDarkMode ? 'bg-blue-900/10 opacity-30 border border-blue-800' : 'bg-slate-200 border-slate-300 opacity-60')
-                             }`}
-                             style={{
-                                left: `calc(${(task.startDay / 7) * 100}% + 2px)`,
-                                width: `calc(${(task.durationDays / 7) * 100}% - 4px)`
-                             }}
-                          >
-                             {task.progress > 0 && (
-                                <div className={`absolute left-0 top-0 bottom-0 transition-all duration-1000 ${isDarkMode ? 'bg-white/5' : 'bg-black/10'}`} style={{ width: `${task.progress}%` }}></div>
-                             )}
-                             <div className="relative z-10">
-                                <span className={`text-[9px] font-black uppercase tracking-widest ${task.status === 'completed' && isDarkMode ? 'text-emerald-400' : 'text-white'}`}>
-                                  {task.status === 'in-progress' ? `${task.progress}% Synchronized` : task.status}
-                                </span>
-                                {task.status === 'in-progress' && (
-                                  <div className="w-full h-1 bg-white/20 rounded-full mt-1 overflow-hidden">
-                                     <div className="h-full bg-white transition-all duration-1000" style={{ width: `${task.progress}%` }}></div>
-                                  </div>
-                                )}
-                             </div>
-                          </div>
-                       </div>
-                    </div>
-                 ))}
-              </div>
-           </div>
-        </div>
-        
-        <div className={`px-8 py-4 border-t flex justify-between items-center ${isDarkMode ? 'bg-blue-950/20 border-blue-800' : 'bg-slate-50/50 border-slate-100'}`}>
-           <p className={`text-[9px] font-bold uppercase tracking-widest italic ${isDarkMode ? 'text-blue-400/50' : 'text-slate-400'}`}>Strategic accountability matrix verified. 8 cross-functional teams reporting 100% telemetry status.</p>
-           <button className="text-[9px] font-black text-amber-500 hover:underline uppercase tracking-widest">Global Master Schedule</button>
-        </div>
-      </section>
-
-      {/* Clinical Schedule Section */}
-      <section className={`rounded-[2.5rem] border overflow-hidden transition-all duration-500 ${isDarkMode ? 'bg-[#23324a] border-blue-800 shadow-[0_20px_50px_rgba(0,0,0,0.3)]' : 'bg-white border-slate-100 shadow-sm'}`}>
-        <div className={`p-8 border-b flex flex-col md:flex-row md:items-center justify-between gap-6 ${isDarkMode ? 'border-blue-800' : 'border-slate-50'}`}>
-           <div>
-              <h3 className={`text-xl font-bold flex items-center gap-3 transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>
-                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-amber-500/20 text-amber-500 border border-amber-500/20' : 'bg-amber-50 text-amber-500'}`}>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <div className={`px-2 py-1 rounded-lg flex items-center gap-1.5 border ${isDarkMode ? 'bg-amber-950/20 border-amber-500/30' : 'bg-amber-50 border-amber-100'}`}>
+                  <div className="w-1 h-1 bg-amber-500 rounded-full animate-pulse"></div>
+                  <span className={`text-[8px] font-black uppercase tracking-tighter ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>Live Sensor</span>
                 </div>
-                Clinical Calendar
-              </h3>
-              <p className={`text-sm font-medium mt-1 ${isDarkMode ? 'text-blue-300/40' : 'text-slate-500'}`}>Operational Triage & Resource Allocation Flow</p>
-           </div>
-           
-           <div className={`flex p-1 rounded-2xl border transition-colors ${isDarkMode ? 'bg-[#111d2b] border-blue-800' : 'bg-slate-50 border-slate-100'}`}>
-              {[
-                { date: '2023-10-23', label: 'MON', d: '23' },
-                { date: '2023-10-24', label: 'TUE', d: '24' },
-                { date: '2023-10-25', label: 'WED', d: '25' },
-                { date: '2023-10-26', label: 'THU', d: '26' },
-                { date: '2023-10-27', label: 'FRI', d: '27' },
-              ].map(day => (
-                <button
-                  key={day.date}
-                  onClick={() => setSelectedDate(day.date)}
-                  className={`px-4 py-2 rounded-xl flex flex-col items-center gap-0.5 transition-all min-w-[64px] ${
-                    selectedDate === day.date 
-                      ? 'bg-amber-600 text-white shadow-xl shadow-amber-900/20 scale-105 z-10' 
-                      : (isDarkMode ? 'text-blue-400 hover:text-blue-200' : 'text-slate-400 hover:text-slate-600')
-                  }`}
-                >
-                  <span className="text-[8px] font-black uppercase tracking-widest">{day.label}</span>
-                  <span className="text-sm font-black">{day.d}</span>
-                </button>
-              ))}
-           </div>
-        </div>
+              </div>
+              <p className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300/50' : 'text-slate-400'}`}>Heart Rate</p>
+              <div className="flex items-baseline gap-1.5 mt-2">
+                <span className={`text-4xl font-black transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>{currentHeartRate}</span>
+                <span className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-blue-300/30' : 'text-slate-400'}`}>bpm</span>
+              </div>
+              <div className="h-12 mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={MOCK_HEALTH_METRICS}>
+                    <Area type="monotone" dataKey="heartRate" stroke="#f59e0b" fill="#fef3c7" fillOpacity={isDarkMode ? 0.05 : 0.4} strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
-        <div className="p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
-           {/* Schedule Feed */}
-           <div className="lg:col-span-3 space-y-4 max-h-[400px] overflow-y-auto pr-4 custom-scrollbar">
-              {filteredAppointments.length > 0 ? filteredAppointments.map(app => {
-                const phase = getTreatmentPhase(app.time);
-                const doctor = MOCK_DOCTORS.find(d => d.id === app.doctorId);
-                return (
-                  <div key={app.id} className={`p-5 rounded-[2rem] border transition-all group flex items-center gap-6 ${isDarkMode ? 'bg-[#1a263e] border-blue-800 hover:border-amber-500/40 shadow-inner' : 'bg-slate-50 border-slate-100 hover:border-amber-200 shadow-sm'}`}>
-                    <div className="text-center min-w-[80px]">
-                      <p className={`text-lg font-black tracking-tighter ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>{app.time.split(' ')[0]}</p>
-                      <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-300/50' : 'text-slate-400'}`}>{app.time.split(' ')[1]}</p>
+            {/* Sleep Quality Card */}
+            <div className={`p-6 rounded-[2rem] border hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group ${isDarkMode ? 'bg-[#23324a] border-blue-800 shadow-[0_10px_30px_rgba(0,0,0,0.2)]' : 'bg-white border-slate-100 shadow-sm'}`}>
+              <div className="flex justify-between items-start mb-4">
+                <div className={`w-12 h-12 bg-blue-500 text-white rounded-2xl flex items-center justify-center transition-transform group-hover:rotate-12 shadow-lg`}>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                </div>
+                <div className="relative w-8 h-8">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="3" fill="transparent" className={isDarkMode ? 'text-blue-900/50' : 'text-slate-100'} />
+                      <circle cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="3" fill="transparent" strokeDasharray={88} strokeDashoffset={88 * (1 - currentSleep / 10)} className="text-blue-500 transition-all duration-1000" />
+                    </svg>
+                </div>
+              </div>
+              <p className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300/50' : 'text-slate-400'}`}>Sleep Quality</p>
+              <div className="flex items-baseline gap-1.5 mt-2">
+                <span className={`text-4xl font-black transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>{currentSleep}</span>
+                <span className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-blue-300/30' : 'text-slate-400'}`}>hours</span>
+              </div>
+              <p className="text-[10px] font-bold text-emerald-500 uppercase mt-4">92% Restored</p>
+              <div className={`w-full h-1 rounded-full mt-2 overflow-hidden ${isDarkMode ? 'bg-blue-900/50' : 'bg-slate-100'}`}>
+                  <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: '92%' }}></div>
+              </div>
+            </div>
+
+            {/* Steps Card */}
+            <div className={`p-6 rounded-[2rem] border hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group ${isDarkMode ? 'bg-[#23324a] border-blue-800 shadow-[0_10px_30px_rgba(0,0,0,0.2)]' : 'bg-white border-slate-100 shadow-sm'}`}>
+              <div className="flex justify-between items-start mb-4">
+                <div className={`w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center transition-transform group-hover:translate-x-1 shadow-lg`}>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+                <span className={`text-[10px] font-black px-2 py-1 rounded-lg ${isDarkMode ? 'text-emerald-400 bg-emerald-900/40' : 'text-emerald-600 bg-emerald-50'}`}>+12%</span>
+              </div>
+              <p className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300/50' : 'text-slate-400'}`}>Daily Steps</p>
+              <div className="flex items-baseline gap-1.5 mt-2">
+                <span className={`text-4xl font-black transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>{currentSteps.toLocaleString()}</span>
+                <span className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-blue-300/30' : 'text-slate-400'}`}>steps</span>
+              </div>
+              <div className="h-12 mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={MOCK_HEALTH_METRICS}>
+                    <Area type="step" dataKey="steps" stroke="#10b981" fill="#dcfce7" fillOpacity={isDarkMode ? 0.05 : 0.4} strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Blood Pressure Card */}
+            <div className={`p-6 rounded-[2rem] border hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group ${isDarkMode ? 'bg-[#23324a] border-blue-800 shadow-[0_10px_30px_rgba(0,0,0,0.2)]' : 'bg-white border-slate-100 shadow-sm'}`}>
+              <div className="flex justify-between items-start mb-4">
+                <div className={`w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center transition-transform group-hover:scale-95 shadow-lg`}>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <span className={`text-[10px] font-black px-2 py-1 rounded-lg ${isDarkMode ? 'text-blue-300/50 bg-blue-900/40 border border-blue-800' : 'text-slate-400 bg-slate-50 border border-slate-100'}`}>Stable</span>
+              </div>
+              <p className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300/50' : 'text-slate-400'}`}>Blood Pressure</p>
+              <div className="flex items-baseline gap-1.5 mt-2">
+                <span className={`text-3xl font-black transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>118/76</span>
+                <span className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-blue-300/30' : 'text-slate-400'}`}>mmHg</span>
+              </div>
+              <div className="h-12 mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={MOCK_HEALTH_METRICS}>
+                    <Line type="monotone" dataKey="bloodPressure" stroke="#f43f5e" strokeWidth={3} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Program Lifecycle Planner */}
+          <section className={`rounded-[2.5rem] border overflow-hidden transition-all duration-500 ${isDarkMode ? 'bg-[#23324a] border-blue-800 shadow-[0_20px_50px_rgba(0,0,0,0.3)]' : 'bg-white border-slate-100 shadow-sm'}`}>
+            <div className={`p-8 border-b flex justify-between items-center ${isDarkMode ? 'border-blue-800' : 'border-slate-50'}`}>
+              <div>
+                  <h3 className={`text-xl font-bold flex items-center gap-3 transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>
+                    <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-amber-500/20 text-amber-500 border border-amber-500/20' : 'bg-amber-50 text-amber-500'}`}>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" /></svg>
                     </div>
-
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                           <img src={doctor?.image} className="w-8 h-8 rounded-xl border border-white shadow-sm" alt="" />
-                           <div>
-                              <p className={`text-sm font-bold transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>{app.doctorName}</p>
-                              <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300/50' : 'text-slate-400'}`}>{app.specialty}</p>
-                           </div>
-                        </div>
-                        <div className={`px-3 py-1 rounded-xl flex items-center gap-2 border ${phase.color.replace('bg-', 'bg-').replace('500', '10')}/20 ${phase.color.replace('bg-', 'border-').replace('500', '400')}/30 shadow-sm`}>
-                           <div className={`w-1.5 h-1.5 rounded-full ${phase.color} animate-pulse`}></div>
-                           <span className={`text-[10px] font-black uppercase tracking-widest ${phase.color.replace('bg-', 'text-')}`}>{phase.label}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className={`p-2 border rounded-xl ${isDarkMode ? 'bg-blue-900/10 border-blue-800/50' : 'bg-white/5 border-slate-200/50'}`}>
-                          <p className="text-[8px] font-black text-blue-400/60 uppercase tracking-tighter mb-0.5">Readiness</p>
-                          <p className={`text-[10px] font-bold ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>98% Optimal</p>
-                        </div>
-                        <div className={`p-2 border rounded-xl ${isDarkMode ? 'bg-blue-900/10 border-blue-800/50' : 'bg-white/5 border-slate-200/50'}`}>
-                          <p className="text-[8px] font-black text-blue-400/60 uppercase tracking-tighter mb-0.5">Patient Vector</p>
-                          <p className={`text-[10px] font-bold ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`}>Arriving: 4m</p>
-                        </div>
-                        <div className={`p-2 border rounded-xl ${isDarkMode ? 'bg-blue-900/10 border-blue-800/50' : 'bg-white/5 border-slate-200/50'}`}>
-                          <p className="text-[8px] font-black text-blue-400/60 uppercase tracking-tighter mb-0.5">Complexity</p>
-                          <p className={`text-[10px] font-bold ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`}>Moderate</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${isDarkMode ? 'bg-blue-800/50 text-blue-200 border border-blue-700 hover:bg-blue-700 hover:text-white' : 'bg-white text-slate-400 hover:text-amber-600 shadow-sm border border-slate-100'}`}>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
-                    </button>
+                    NEXIS Program Lifecycle Planner
+                  </h3>
+                  <p className={`text-sm font-medium mt-1 ${isDarkMode ? 'text-blue-300/40' : 'text-slate-500'}`}>Strategic roadmap with RACI assignees and deadline tracking</p>
+              </div>
+              <div className="flex gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300' : 'text-slate-400'}`}>Active</span>
                   </div>
-                );
-              }) : (
-                <div className="h-full flex flex-col items-center justify-center text-center p-12 opacity-50">
-                  <svg className={`w-12 h-12 mb-4 ${isDarkMode ? 'text-blue-800' : 'text-slate-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <p className={`text-sm font-bold ${isDarkMode ? 'text-blue-300/40' : 'text-slate-400'}`}>No scheduled interventions for this vector.</p>
-                </div>
-              )}
-           </div>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${isDarkMode ? 'bg-blue-700' : 'bg-slate-300'}`}></div>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300' : 'text-slate-400'}`}>Scheduled</span>
+                  </div>
+              </div>
+            </div>
 
-           {/* Schedule KPIs */}
-           <div className="space-y-6">
-              <div className={`p-6 rounded-3xl border transition-colors ${isDarkMode ? 'bg-[#111d2b] border-blue-800' : 'bg-slate-50 border-slate-100'}`}>
-                 <h4 className={`text-[10px] font-black uppercase tracking-widest mb-6 flex items-center gap-2 ${isDarkMode ? 'text-blue-300/80' : 'text-slate-400'}`}>
-                    <div className="w-1.5 h-1.5 bg-amber-500 rounded-full"></div>
-                    Daily Efficiency Pulse
-                 </h4>
-                 <div className="space-y-6">
-                    <div>
-                      <div className="flex justify-between items-end mb-2">
-                        <span className={`text-[9px] font-bold uppercase ${isDarkMode ? 'text-blue-300/40' : 'text-slate-400'}`}>Wait Time Avg</span>
-                        <span className={`text-xs font-black ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>12m</span>
-                      </div>
-                      <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-blue-900/30' : 'bg-slate-200/20'}`}>
-                        <div className="bg-amber-500 h-full w-[12%] rounded-full shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
-                      </div>
+            <div className="p-8 overflow-x-auto custom-scrollbar">
+              <div className="min-w-[900px]">
+                  {/* Timeline Header */}
+                  <div className={`grid grid-cols-[300px_1fr] border-b pb-4 mb-4 ${isDarkMode ? 'border-blue-800' : 'border-slate-100'}`}>
+                    <div className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400/60' : 'text-slate-400'}`}>Strategic Unit / RACI Assignees</div>
+                    <div className="grid grid-cols-7 gap-1 text-center">
+                        {daysOfWeek.map((day, i) => (
+                          <div key={i} className={`text-[10px] font-black uppercase tracking-widest ${i === 1 ? 'text-amber-500' : (isDarkMode ? 'text-blue-400/60' : 'text-slate-400')}`}>
+                              {day}
+                              {i === 1 && <div className="text-[8px] mt-0.5 font-black uppercase">Current</div>}
+                          </div>
+                        ))}
                     </div>
-                    <div>
-                      <div className="flex justify-between items-end mb-2">
-                        <span className={`text-[9px] font-bold uppercase ${isDarkMode ? 'text-blue-300/40' : 'text-slate-400'}`}>Room Utilization</span>
-                        <span className={`text-xs font-black ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`}>84%</span>
-                      </div>
-                      <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-blue-900/30' : 'bg-slate-200/20'}`}>
-                        <div className="bg-blue-500 h-full w-[84%] rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
-                      </div>
+                  </div>
+
+                  {/* Task Rows */}
+                  <div className="space-y-6">
+                    {MOCK_PROGRAMS.map((task) => (
+                        <div key={task.id} className="grid grid-cols-[300px_1fr] items-start group">
+                          <div className="pr-4">
+                              <div className="flex items-center justify-between">
+                                <h4 className={`text-xs font-bold transition-colors ${isDarkMode ? 'text-blue-100' : 'text-slate-700'} group-hover:text-amber-500`}>{task.name}</h4>
+                                {task.status === 'completed' && task.completionDate && (
+                                  <span className="text-[8px] font-black uppercase text-emerald-500 border border-emerald-500/20 px-1.5 py-0.5 rounded-lg shrink-0 ml-2">Done {task.completionDate.split('-').slice(1).join('/')}</span>
+                                )}
+                              </div>
+                              <p className={`text-[9px] font-medium uppercase tracking-tighter mt-1 ${isDarkMode ? 'text-blue-400/50' : 'text-slate-400'}`}>Lead: {task.owner} • <span className="text-amber-500">Due: {task.dueDate}</span></p>
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {task.assignees.map((assignee, idx) => (
+                                  <span key={idx} className={`text-[8px] font-bold px-1.5 py-0.5 rounded-md border ${isDarkMode ? 'bg-blue-900/20 border-blue-800 text-blue-300' : 'bg-slate-100 border-slate-200 text-slate-500'}`}>
+                                    {assignee}
+                                  </span>
+                                ))}
+                              </div>
+                          </div>
+                          <div className="grid grid-cols-7 gap-1 h-12 relative">
+                              <div className="absolute inset-0 grid grid-cols-7 gap-1 pointer-events-none opacity-20">
+                                {[...Array(7)].map((_, i) => (
+                                    <div key={i} className={`border-r h-full ${i === 6 ? 'border-r-0' : ''} ${isDarkMode ? 'border-blue-700' : 'border-slate-300'}`}></div>
+                                ))}
+                              </div>
+
+                              <div 
+                                className={`h-full rounded-xl absolute transition-all duration-500 ease-out group-hover:shadow-xl group-hover:scale-[1.01] flex flex-col justify-center px-4 overflow-hidden border ${
+                                    task.status === 'completed' ? (isDarkMode ? 'bg-emerald-600/20 border-emerald-500/30' : 'bg-emerald-600 border-emerald-500') :
+                                    task.status === 'in-progress' ? (isDarkMode ? 'bg-amber-600/30 border-amber-500/40 shadow-amber-900/50' : 'bg-amber-600 border-amber-500 shadow-md') :
+                                    (isDarkMode ? 'bg-blue-900/10 opacity-30 border border-blue-800' : 'bg-slate-200 border-slate-300 opacity-60')
+                                }`}
+                                style={{
+                                    left: `calc(${(task.startDay / 7) * 100}% + 2px)`,
+                                    width: `calc(${(task.durationDays / 7) * 100}% - 4px)`
+                                }}
+                              >
+                                {task.progress > 0 && (
+                                    <div className={`absolute left-0 top-0 bottom-0 transition-all duration-1000 ${isDarkMode ? 'bg-white/5' : 'bg-black/10'}`} style={{ width: `${task.progress}%` }}></div>
+                                )}
+                                <div className="relative z-10">
+                                    <span className={`text-[9px] font-black uppercase tracking-widest ${task.status === 'completed' && isDarkMode ? 'text-emerald-400' : 'text-white'}`}>
+                                      {task.status === 'in-progress' ? `${task.progress}% Synchronized` : task.status}
+                                    </span>
+                                    {task.status === 'in-progress' && (
+                                      <div className="w-full h-1 bg-white/20 rounded-full mt-1 overflow-hidden">
+                                        <div className="h-full bg-white transition-all duration-1000" style={{ width: `${task.progress}%` }}></div>
+                                      </div>
+                                    )}
+                                </div>
+                              </div>
+                          </div>
+                        </div>
+                    ))}
+                  </div>
+              </div>
+            </div>
+            
+            <div className={`px-8 py-4 border-t flex justify-between items-center ${isDarkMode ? 'bg-blue-950/20 border-blue-800' : 'bg-slate-50/50 border-slate-100'}`}>
+              <p className={`text-[9px] font-bold uppercase tracking-widest italic ${isDarkMode ? 'text-blue-400/50' : 'text-slate-400'}`}>Strategic accountability matrix verified. 8 cross-functional teams reporting 100% telemetry status.</p>
+              <button className="text-[9px] font-black text-amber-500 hover:underline uppercase tracking-widest">Global Master Schedule</button>
+            </div>
+          </section>
+
+          {/* Clinical Schedule Section */}
+          <section className={`rounded-[2.5rem] border overflow-hidden transition-all duration-500 ${isDarkMode ? 'bg-[#23324a] border-blue-800 shadow-[0_20px_50px_rgba(0,0,0,0.3)]' : 'bg-white border-slate-100 shadow-sm'}`}>
+            <div className={`p-8 border-b flex flex-col md:flex-row md:items-center justify-between gap-6 ${isDarkMode ? 'border-blue-800' : 'border-slate-50'}`}>
+              <div>
+                  <h3 className={`text-xl font-bold flex items-center gap-3 transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>
+                    <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-amber-500/20 text-amber-500 border border-amber-500/20' : 'bg-amber-50 text-amber-500'}`}>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     </div>
-                    <div>
-                      <div className="flex justify-between items-end mb-2">
-                        <span className={`text-[9px] font-bold uppercase ${isDarkMode ? 'text-blue-300/40' : 'text-slate-400'}`}>Protocol Match</span>
-                        <span className={`text-xs font-black ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`}>99.8%</span>
+                    Clinical Calendar
+                  </h3>
+                  <p className={`text-sm font-medium mt-1 ${isDarkMode ? 'text-blue-300/40' : 'text-slate-500'}`}>Operational Triage & Resource Allocation Flow</p>
+              </div>
+              
+              <div className={`flex p-1 rounded-2xl border transition-colors ${isDarkMode ? 'bg-[#111d2b] border-blue-800' : 'bg-slate-50 border-slate-100'}`}>
+                  {[
+                    { date: '2023-10-23', label: 'MON', d: '23' },
+                    { date: '2023-10-24', label: 'TUE', d: '24' },
+                    { date: '2023-10-25', label: 'WED', d: '25' },
+                    { date: '2023-10-26', label: 'THU', d: '26' },
+                    { date: '2023-10-27', label: 'FRI', d: '27' },
+                  ].map(day => (
+                    <button
+                      key={day.date}
+                      onClick={() => setSelectedDate(day.date)}
+                      className={`px-4 py-2 rounded-xl flex flex-col items-center gap-0.5 transition-all min-w-[64px] ${
+                        selectedDate === day.date 
+                          ? 'bg-amber-600 text-white shadow-xl shadow-amber-900/20 scale-105 z-10' 
+                          : (isDarkMode ? 'text-blue-400 hover:text-blue-200' : 'text-slate-400 hover:text-slate-600')
+                      }`}
+                    >
+                      <span className="text-[8px] font-black uppercase tracking-widest">{day.label}</span>
+                      <span className="text-sm font-black">{day.d}</span>
+                    </button>
+                  ))}
+              </div>
+            </div>
+
+            <div className="p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
+              {/* Schedule Feed */}
+              <div className="lg:col-span-3 space-y-4 max-h-[400px] overflow-y-auto pr-4 custom-scrollbar">
+                  {filteredAppointments.length > 0 ? filteredAppointments.map(app => {
+                    const phase = getTreatmentPhase(app.time);
+                    const doctor = MOCK_DOCTORS.find(d => d.id === app.doctorId);
+                    return (
+                      <div key={app.id} className={`p-5 rounded-[2rem] border transition-all group flex items-center gap-6 ${isDarkMode ? 'bg-[#1a263e] border-blue-800 hover:border-amber-500/40 shadow-inner' : 'bg-slate-50 border-slate-100 hover:border-amber-200 shadow-sm'}`}>
+                        <div className="text-center min-w-[80px]">
+                          <p className={`text-lg font-black tracking-tighter ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>{app.time.split(' ')[0]}</p>
+                          <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-300/50' : 'text-slate-400'}`}>{app.time.split(' ')[1]}</p>
+                        </div>
+
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <img src={doctor?.image} className="w-8 h-8 rounded-xl border border-white shadow-sm" alt="" />
+                              <div>
+                                  <p className={`text-sm font-bold transition-colors ${isDarkMode ? 'text-blue-50' : 'text-slate-800'}`}>{app.doctorName}</p>
+                                  <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-300/50' : 'text-slate-400'}`}>{app.specialty}</p>
+                              </div>
+                            </div>
+                            <div className={`px-3 py-1 rounded-xl flex items-center gap-2 border ${phase.color.replace('bg-', 'bg-').replace('500', '10')}/20 ${phase.color.replace('bg-', 'border-').replace('500', '400')}/30 shadow-sm`}>
+                              <div className={`w-1.5 h-1.5 rounded-full ${phase.color} animate-pulse`}></div>
+                              <span className={`text-[10px] font-black uppercase tracking-widest ${phase.color.replace('bg-', 'text-')}`}>{phase.label}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className={`p-2 border rounded-xl ${isDarkMode ? 'bg-blue-900/10 border-blue-800/50' : 'bg-white/5 border-slate-200/50'}`}>
+                              <p className="text-[8px] font-black text-blue-400/60 uppercase tracking-tighter mb-0.5">Readiness</p>
+                              <p className={`text-[10px] font-bold ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>98% Optimal</p>
+                            </div>
+                            <div className={`p-2 border rounded-xl ${isDarkMode ? 'bg-blue-900/10 border-blue-800/50' : 'bg-white/5 border-slate-200/50'}`}>
+                              <p className="text-[8px] font-black text-blue-400/60 uppercase tracking-tighter mb-0.5">Patient Vector</p>
+                              <p className={`text-[10px] font-bold ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`}>Arriving: 4m</p>
+                            </div>
+                            <div className={`p-2 border rounded-xl ${isDarkMode ? 'bg-blue-900/10 border-blue-800/50' : 'bg-white/5 border-slate-200/50'}`}>
+                              <p className="text-[8px] font-black text-blue-400/60 uppercase tracking-tighter mb-0.5">Complexity</p>
+                              <p className={`text-[10px] font-bold ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`}>Moderate</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${isDarkMode ? 'bg-blue-800/50 text-blue-200 border border-blue-700 hover:bg-blue-700 hover:text-white' : 'bg-white text-slate-400 hover:text-amber-600 shadow-sm border border-slate-100'}`}>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                        </button>
                       </div>
-                      <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-blue-900/30' : 'bg-slate-200/20'}`}>
-                        <div className="bg-orange-500 h-full w-[99%] rounded-full shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
-                      </div>
+                    );
+                  }) : (
+                    <div className="h-full flex flex-col items-center justify-center text-center p-12 opacity-50">
+                      <svg className={`w-12 h-12 mb-4 ${isDarkMode ? 'text-blue-800' : 'text-slate-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <p className={`text-sm font-bold ${isDarkMode ? 'text-blue-300/40' : 'text-slate-400'}`}>No scheduled interventions for this vector.</p>
                     </div>
-                 </div>
+                  )}
               </div>
 
-              <div className={`p-6 rounded-3xl border text-white relative overflow-hidden group shadow-2xl transition-all duration-500 ${isDarkMode ? 'bg-[#1a263e] border-blue-600/30' : 'bg-slate-900 border-slate-800'}`}>
-                 <div className="absolute -right-8 -top-8 w-24 h-24 bg-white/5 rounded-full group-hover:scale-150 transition-transform"></div>
-                 <h5 className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-3">Triage Suggestion</h5>
-                 <p className={`text-[11px] leading-relaxed font-medium transition-colors ${isDarkMode ? 'text-blue-50' : 'text-blue-50/80'}`}>
-                    High clinical load expected between 14:00 - 16:00. AI suggests opening secondary consultation node in Hub fac-4.
-                 </p>
-                 <button className="mt-4 text-[9px] font-black text-white hover:text-amber-400 uppercase tracking-widest underline decoration-amber-500/50 underline-offset-4 transition-colors">Apply Strategy</button>
+              {/* Schedule KPIs */}
+              <div className="space-y-6">
+                  <div className={`p-6 rounded-3xl border transition-colors ${isDarkMode ? 'bg-[#111d2b] border-blue-800' : 'bg-slate-50 border-slate-100'}`}>
+                    <h4 className={`text-[10px] font-black uppercase tracking-widest mb-6 flex items-center gap-2 ${isDarkMode ? 'text-blue-300/80' : 'text-slate-400'}`}>
+                        <div className="w-1.5 h-1.5 bg-amber-500 rounded-full"></div>
+                        Daily Efficiency Pulse
+                    </h4>
+                    <div className="space-y-6">
+                        <div>
+                          <div className="flex justify-between items-end mb-2">
+                            <span className={`text-[9px] font-bold uppercase ${isDarkMode ? 'text-blue-300/40' : 'text-slate-400'}`}>Wait Time Avg</span>
+                            <span className={`text-xs font-black ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>12m</span>
+                          </div>
+                          <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-blue-900/30' : 'bg-slate-200/20'}`}>
+                            <div className="bg-amber-500 h-full w-[12%] rounded-full shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between items-end mb-2">
+                            <span className={`text-[9px] font-bold uppercase ${isDarkMode ? 'text-blue-300/40' : 'text-slate-400'}`}>Room Utilization</span>
+                            <span className={`text-xs font-black ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`}>84%</span>
+                          </div>
+                          <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-blue-900/30' : 'bg-slate-200/20'}`}>
+                            <div className="bg-blue-500 h-full w-[84%] rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between items-end mb-2">
+                            <span className={`text-[9px] font-bold uppercase ${isDarkMode ? 'text-blue-300/40' : 'text-slate-400'}`}>Protocol Match</span>
+                            <span className={`text-xs font-black ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`}>99.8%</span>
+                          </div>
+                          <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-blue-900/30' : 'bg-slate-200/20'}`}>
+                            <div className="bg-orange-500 h-full w-[99%] rounded-full shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+                          </div>
+                        </div>
+                    </div>
+                  </div>
+
+                  <div className={`p-6 rounded-3xl border text-white relative overflow-hidden group shadow-2xl transition-all duration-500 ${isDarkMode ? 'bg-[#1a263e] border-blue-600/30' : 'bg-slate-900 border-slate-800'}`}>
+                    <div className="absolute -right-8 -top-8 w-24 h-24 bg-white/5 rounded-full group-hover:scale-150 transition-transform"></div>
+                    <h5 className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-3">Triage Suggestion</h5>
+                    <p className={`text-[11px] leading-relaxed font-medium transition-colors ${isDarkMode ? 'text-blue-50' : 'text-blue-50/80'}`}>
+                        High clinical load expected between 14:00 - 16:00. AI suggests opening secondary consultation node in Hub fac-4.
+                    </p>
+                    <button className="mt-4 text-[9px] font-black text-white hover:text-amber-400 uppercase tracking-widest underline decoration-amber-500/50 underline-offset-4 transition-colors">Apply Strategy</button>
+                  </div>
               </div>
-           </div>
-        </div>
-      </section>
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 };

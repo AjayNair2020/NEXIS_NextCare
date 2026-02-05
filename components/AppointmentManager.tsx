@@ -192,61 +192,76 @@ const AppointmentManager: React.FC = () => {
           </form>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {appointments.map(app => (
-            <div key={app.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group relative overflow-hidden flex flex-col">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-emerald-500 border border-slate-100 relative group-hover:scale-105 transition-transform">
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  </svg>
-                  {app.reminderSettings?.pushEnabled && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white animate-pulse"></div>
-                  )}
+        <div className="space-y-6">
+          {/* Spatial Awareness Map for Appointments */}
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden relative group">
+             <div className="absolute top-6 left-6 z-[20]">
+                <div className="bg-white/90 backdrop-blur px-6 py-3 rounded-2xl shadow-2xl border border-slate-100">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Patient Spatial Index</p>
+                   <h3 className="text-sm font-black text-slate-800 uppercase italic">Global Bio-Identity Tags</h3>
                 </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-bold text-lg text-slate-800">{app.doctorName}</h3>
-                    <span className={`text-[10px] uppercase font-bold px-2.5 py-1 rounded-full ${getStatusStyle(app.status)}`}>
-                      {app.status}
-                    </span>
+             </div>
+             <div className="h-[400px] w-full relative">
+                <HealthMap variant="appointments" />
+             </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {appointments.map(app => (
+              <div key={app.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group relative overflow-hidden flex flex-col">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-emerald-500 border border-slate-100 relative group-hover:scale-105 transition-transform">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    </svg>
+                    {app.reminderSettings?.pushEnabled && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white animate-pulse"></div>
+                    )}
                   </div>
-                  <p className="text-emerald-600 text-sm font-medium mb-1">{app.specialty}</p>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                    {new Date(app.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} @ {app.time}
-                  </p>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start mb-1">
+                      <h3 className="font-bold text-lg text-slate-800">{app.doctorName}</h3>
+                      <span className={`text-[10px] uppercase font-bold px-2.5 py-1 rounded-full ${getStatusStyle(app.status)}`}>
+                        {app.status}
+                      </span>
+                    </div>
+                    <p className="text-emerald-600 text-sm font-medium mb-1">{app.specialty}</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      {new Date(app.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} @ {app.time}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex flex-wrap gap-2 mb-4">
-                <button 
-                  onClick={() => setSelectedJourneyApp(app)}
-                  className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center gap-1.5"
-                >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
-                  Journey Map
-                </button>
-                <button 
-                  onClick={() => setConfiguringReminderApp(app)}
-                  className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all flex items-center gap-1.5"
-                >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                  Smart Reminders
-                </button>
-                <button 
-                  onClick={() => handleTriggerReminder(app)}
-                  className="px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all flex items-center gap-1.5"
-                >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-                  Send Now
-                </button>
-              </div>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <button 
+                    onClick={() => setSelectedJourneyApp(app)}
+                    className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center gap-1.5"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
+                    Journey Map
+                  </button>
+                  <button 
+                    onClick={() => setConfiguringReminderApp(app)}
+                    className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all flex items-center gap-1.5"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                    Smart Reminders
+                  </button>
+                  <button 
+                    onClick={() => handleTriggerReminder(app)}
+                    className="px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all flex items-center gap-1.5"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                    Send Now
+                  </button>
+                </div>
 
-              {app.reminderSettings?.lastSent && (
-                <p className="text-[9px] text-slate-400 italic">Last reminder sent: {new Date(app.reminderSettings.lastSent).toLocaleTimeString()}</p>
-              )}
-            </div>
-          ))}
+                {app.reminderSettings?.lastSent && (
+                  <p className="text-[9px] text-slate-400 italic">Last reminder sent: {new Date(app.reminderSettings.lastSent).toLocaleTimeString()}</p>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -5,7 +5,7 @@ import { HealthIncident, Appointment, Facility, PatientProfile, Doctor, Transpor
 import { MOCK_INCIDENTS, MOCK_APPOINTMENTS, MOCK_DOCTORS, MOCK_FACILITIES, MOCK_PATIENTS, MOCK_TAXONOMY, MOCK_TRANSPORTS, MOCK_SERVICE_AREAS, MOCK_INVENTORY } from '../constants';
 
 interface HealthMapProps {
-  variant?: 'standard' | 'lineage' | 'dashboard' | 'operations' | 'optimizer' | 'journey';
+  variant?: 'standard' | 'lineage' | 'dashboard' | 'operations' | 'optimizer' | 'journey' | 'appointments';
   selectedAreaId?: string | null;
   activeAppointment?: Appointment | null;
 }
@@ -78,8 +78,8 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
       // @ts-ignore
       mapInstance.current = L.map(mapContainer.current, {
         zoomControl: false,
-        scrollWheelZoom: variant !== 'dashboard' && variant !== 'optimizer',
-      }).setView([37.7749, -122.4194], variant === 'dashboard' ? 12 : 13);
+        scrollWheelZoom: variant !== 'dashboard' && variant !== 'optimizer' && variant !== 'appointments',
+      }).setView([37.7749, -122.4194], variant === 'dashboard' || variant === 'appointments' ? 12 : 13);
       
       const config = MAP_LAYERS.find(l => l.id === activeBaseLayer) || MAP_LAYERS[0];
       // @ts-ignore
@@ -133,6 +133,12 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
 
     if (variant === 'optimizer') {
       MOCK_SERVICE_AREAS.forEach(area => renderServiceArea(area));
+      MOCK_FACILITIES.filter(f => f.type === 'hospital').forEach(f => renderFacility(f));
+      return;
+    }
+
+    if (variant === 'appointments') {
+      MOCK_PATIENTS.forEach(p => renderPatient(p));
       MOCK_FACILITIES.filter(f => f.type === 'hospital').forEach(f => renderFacility(f));
       return;
     }
@@ -309,7 +315,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
       fillOpacity: 0.8
     }).addTo(mapInstance.current);
 
-    if ((variant === 'dashboard' || variant === 'operations') && f.status) {
+    if ((variant === 'dashboard' || variant === 'operations' || variant === 'appointments') && f.status) {
       // @ts-ignore
       const labelIcon = L.divIcon({
         className: 'facility-label-container',
@@ -392,6 +398,19 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
     });
     // @ts-ignore
     const marker = L.marker([p.lat, p.lng], { icon: userIcon }).addTo(mapInstance.current);
+    
+    if (variant === 'appointments') {
+      // @ts-ignore
+      const labelIcon = L.divIcon({
+        className: 'patient-label-container',
+        html: `<div class="bg-blue-600 text-white px-2 py-0.5 rounded shadow-md border border-blue-400 text-[9px] font-black uppercase tracking-tighter whitespace-nowrap">${p.fullName}</div>`,
+        iconSize: [80, 20],
+        iconAnchor: [40, -15]
+      });
+      // @ts-ignore
+      L.marker([p.lat, p.lng], { icon: labelIcon }).addTo(mapInstance.current);
+    }
+    
     marker.on('click', () => handleNodeClick(p, 'PATIENT'));
   };
 
@@ -491,9 +510,9 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
   };
 
   return (
-    <div className={`flex ${variant === 'dashboard' || variant === 'optimizer' || variant === 'journey' ? 'h-full w-full' : 'h-[calc(100vh-140px)] gap-6'} animate-in fade-in duration-500`}>
+    <div className={`flex ${variant === 'dashboard' || variant === 'optimizer' || variant === 'journey' || variant === 'appointments' ? 'h-full w-full' : 'h-[calc(100vh-140px)] gap-6'} animate-in fade-in duration-500`}>
       <div className="flex-1 flex flex-col gap-4 min-w-0 h-full relative overflow-hidden">
-        {variant !== 'dashboard' && variant !== 'operations' && variant !== 'optimizer' && variant !== 'journey' && (
+        {variant !== 'dashboard' && variant !== 'operations' && variant !== 'optimizer' && variant !== 'journey' && variant !== 'appointments' && (
           <div className="bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100 flex gap-2 w-max">
             <button 
               onClick={() => setViewMode('standard')}
@@ -618,7 +637,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
               </div>
             )}
 
-            {variant !== 'optimizer' && variant !== 'journey' && (
+            {variant !== 'optimizer' && variant !== 'journey' && variant !== 'appointments' && (
               <form onSubmit={handleSearch} className="absolute left-6 top-6 z-[1000] w-72">
                 <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-100 flex items-center px-4 py-1.5 transition-all focus-within:ring-2 focus-within:ring-blue-500/20">
                     <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -627,7 +646,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Locate Facility, Incident, or Node..." 
-                      className="bg-transparent border-none focus:ring-0 text-xs font-bold text-slate-700 placeholder:text-slate-400 placeholder:font-medium w-full ml-2"
+                      className="bg-transparent border-none focus:ring-0 text-sm font-medium w-full ml-2"
                     />
                 </div>
               </form>
@@ -674,7 +693,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
         </div>
       </div>
 
-      {variant !== 'dashboard' && variant !== 'operations' && variant !== 'optimizer' && variant !== 'journey' && (
+      {variant !== 'dashboard' && variant !== 'operations' && variant !== 'optimizer' && variant !== 'journey' && variant !== 'appointments' && (
         <div className="w-96 flex flex-col gap-4">
           {selectedNode ? (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex-1 flex flex-col min-h-0 overflow-y-auto animate-in slide-in-from-right-4">

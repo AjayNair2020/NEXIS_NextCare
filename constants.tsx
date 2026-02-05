@@ -1,5 +1,5 @@
 
-import { HealthMetric, Appointment, Medication, PatientProfile, Doctor, HealthIncident, TaxonomyNode, Facility, InventoryItem, TransportVehicle, OperationalService, ServiceArea, OptimizationScenario, SecurityProtocol, DynamicRACI, Role, ProductionOrder, Fulfillment, ProgramTask, EHRRecord, ComplianceKPI } from './types';
+import { HealthMetric, Appointment, Medication, PatientProfile, Doctor, HealthIncident, TaxonomyNode, Facility, InventoryItem, TransportVehicle, OperationalService, ServiceArea, OptimizationScenario, SecurityProtocol, DynamicRACI, Role, ProductionOrder, Fulfillment, ProgramTask, EHRRecord, ComplianceKPI, SIEMEvent, NISTCategory } from './types';
 
 export const SUPER_ADMIN_EMAIL = "ajaybinduarti@gmail.com";
 
@@ -19,6 +19,21 @@ export const INITIAL_RACI: DynamicRACI = {
   pharmaIndustry: ['SUPER_ADMIN', 'LOGISTICS_CHIEF'],
   priceModel: ['SUPER_ADMIN', 'LOGISTICS_CHIEF', 'CLINICAL_LEAD']
 };
+
+export const MOCK_SIEM_EVENTS: SIEMEvent[] = [
+  { id: 'ev-1', timestamp: '2023-10-24T10:15:00', type: 'access', severity: 'low', source: 'Node-SF-04', description: 'Unusual admin login pattern detected from new IP range.', status: 'mitigated' },
+  { id: 'ev-2', timestamp: '2023-10-24T11:45:20', type: 'integrity', severity: 'medium', source: 'EHR-Sync-01', description: 'Database checksum mismatch in regional patient records.', status: 'investigating' },
+  { id: 'ev-3', timestamp: '2023-10-24T12:05:10', type: 'network', severity: 'critical', source: 'Edge-Gateway-Main', description: 'Potential DDoS vector detected on primary clinical API.', status: 'flagged' },
+  { id: 'ev-4', timestamp: '2023-10-24T13:20:00', type: 'malware', severity: 'high', source: 'Endpoint-Care-12', description: 'Unauthorized binary execution blocked in Care Wing.', status: 'mitigated' },
+];
+
+export const MOCK_NIST_CSF: NISTCategory[] = [
+  { id: 'identify', name: 'Identify', score: 94, description: 'Asset Management and Risk Assessment', controls: 24 },
+  { id: 'protect', name: 'Protect', score: 98, description: 'Identity Management and Data Security', controls: 32 },
+  { id: 'detect', name: 'Detect', score: 92, description: 'Anomalies and Continuous Monitoring', controls: 18 },
+  { id: 'respond', name: 'Respond', score: 88, description: 'Incident Analysis and Mitigation', controls: 15 },
+  { id: 'recover', name: 'Recover', score: 95, description: 'Recovery Planning and Resilience', controls: 12 },
+];
 
 export const MOCK_COMPLIANCE_KPIs: ComplianceKPI[] = [
   { id: 'c1', category: 'EHS', name: 'Total Recordable Incident Rate', value: '0.42', status: 'compliant', trend: 'down', lastAudit: '2023-11-15', description: 'Occupational safety and health performance metric.' },
