@@ -71,7 +71,6 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
   const [loading, setLoading] = useState(false);
   const [showTraffic, setShowTraffic] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isGISBotOpen, setIsGISBotOpen] = useState(false);
 
   useEffect(() => {
     if (mapContainer.current && !mapInstance.current) {
@@ -95,7 +94,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
     if (mapInstance.current) {
       setTimeout(() => mapInstance.current.invalidateSize(), 300);
     }
-  }, [viewMode, variant, showTraffic, selectedAreaId, activeAppointment, isGISBotOpen, activeBaseLayer]);
+  }, [viewMode, variant, showTraffic, selectedAreaId, activeAppointment, activeBaseLayer]);
 
   // Handle Base Layer Switch
   useEffect(() => {
@@ -531,7 +530,7 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
         
         <div className="flex-1 flex flex-col min-h-0 bg-white rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
           {/* Top Map Area */}
-          <div className={`relative flex-1 ${isGISBotOpen ? 'h-1/2' : 'h-full'} transition-all duration-500 ease-in-out`}>
+          <div className="relative flex-1 h-full transition-all duration-500 ease-in-out">
             <div ref={mapContainer} className="w-full h-full" />
             
             <div className="absolute right-6 top-6 z-[1000] flex flex-col items-end gap-3">
@@ -574,18 +573,6 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" /></svg>
                   </button>
                </div>
-               
-               {/* GIS Bot Tool Button */}
-               <button 
-                  onClick={() => setIsGISBotOpen(!isGISBotOpen)}
-                  className={`bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl border transition-all duration-300 ${isGISBotOpen ? 'border-amber-500 text-amber-600 ring-2 ring-amber-500/20' : 'border-slate-100 text-slate-600 hover:text-amber-500'}`}
-                  title="Toggle GIS Intelligence Engine"
-               >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                    <circle cx="12" cy="12" r="3" strokeWidth={2} />
-                  </svg>
-               </button>
 
                {variant !== 'optimizer' && variant !== 'journey' && (
                  <>
@@ -650,44 +637,6 @@ const HealthMap: React.FC<HealthMapProps> = ({ variant = 'standard', selectedAre
                     />
                 </div>
               </form>
-            )}
-          </div>
-
-          {/* Bottom GIS Analysis Bot Panel */}
-          <div 
-            className={`w-full bg-white border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transition-all duration-500 ease-in-out ${isGISBotOpen ? 'h-1/2' : 'h-0'}`}
-          >
-            {isGISBotOpen && (
-              <div className="flex flex-col h-full animate-in slide-in-from-bottom duration-500">
-                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-[#FFF9F2]">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-black uppercase tracking-tighter text-slate-800">GIS Intelligence Stream</h3>
-                      <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Biometric Spatial Sync • External Pipeline: geobots.xyz</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[9px] font-black uppercase text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">Live Telemetry Active</span>
-                    <button 
-                      onClick={() => setIsGISBotOpen(false)}
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all border border-slate-200/50"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
-                    </button>
-                  </div>
-                </div>
-                <div className="flex-1 bg-[#F8FAFC] relative overflow-hidden">
-                  <iframe 
-                    src="https://geobots.xyz/" 
-                    className="w-full h-full border-none"
-                    title="GIS Analysis Bot"
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                  />
-                </div>
-              </div>
             )}
           </div>
         </div>

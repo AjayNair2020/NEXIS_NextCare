@@ -27,6 +27,7 @@ const App: React.FC = () => {
   const [raciConfig, setRaciConfig] = useState<DynamicRACI>(INITIAL_RACI);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isGISBotOpen, setIsGISBotOpen] = useState(false);
   const mainScrollRef = useRef<HTMLElement | null>(null);
   const [isAlertActive, setIsAlertActive] = useState(false);
 
@@ -147,7 +148,7 @@ const App: React.FC = () => {
 
         <div className="max-w-5xl mx-auto">
           {/* Top Bar */}
-          <div className={`flex items-center justify-between mb-8 sticky top-0 backdrop-blur-md z-20 py-2 transition-colors ${isDarkMode ? 'bg-slate-950/80' : 'bg-slate-50/80'}`}>
+          <div className={`flex items-center justify-between mb-8 sticky top-0 backdrop-blur-md z-[60] py-2 transition-colors ${isDarkMode ? 'bg-slate-950/80' : 'bg-slate-50/80'}`}>
             <div className="flex items-center gap-4">
               <div className={`w-10 h-10 rounded-xl shadow-sm border flex items-center justify-center transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-500' : 'bg-white border-slate-200 text-slate-400'}`}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,6 +163,22 @@ const App: React.FC = () => {
             </div>
             
             <div className="flex items-center gap-4">
+              {/* GIS Toggle in Header */}
+              <button 
+                onClick={() => setIsGISBotOpen(!isGISBotOpen)}
+                className={`p-2.5 rounded-xl border transition-all duration-300 group ${
+                  isGISBotOpen 
+                    ? 'bg-amber-500 border-amber-400 text-white shadow-[0_0_20px_rgba(245,158,11,0.3)]' 
+                    : (isDarkMode ? 'bg-slate-900 border-slate-800 text-amber-500 hover:bg-slate-800' : 'bg-white border-slate-200 text-amber-500 hover:bg-amber-50')
+                }`}
+                title="Toggle GIS Analysis Intelligence"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  <circle cx="12" cy="12" r="3" strokeWidth={2} />
+                </svg>
+              </button>
+
               {/* Theme Toggle Button */}
               <button 
                 onClick={() => setIsDarkMode(!isDarkMode)}
@@ -201,6 +218,53 @@ const App: React.FC = () => {
           <div className={isDarkMode ? 'dark-theme-content' : ''}>
             {renderContent()}
           </div>
+        </div>
+
+        {/* Global GeoBot Intelligence Drawer - Outside Map Window */}
+        <div 
+          className={`fixed bottom-0 z-[100] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${
+            isGISBotOpen 
+              ? 'left-[260px] right-[340px] h-[55vh]' 
+              : 'left-[260px] right-[340px] h-0'
+          } ${isSidebarCollapsed ? 'left-[100px]' : 'left-[260px]'}`}
+        >
+          {isGISBotOpen && (
+            <div className="flex flex-col h-full bg-white rounded-t-[2.5rem] shadow-[0_-20px_60px_rgba(0,0,0,0.15)] border-t border-x border-slate-200 overflow-hidden animate-in slide-in-from-bottom duration-700">
+              <div className="px-8 py-5 border-b border-slate-100 flex items-center justify-between bg-[#FFF9F2] backdrop-blur-md">
+                <div className="flex items-center gap-5">
+                  <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-amber-500/20">
+                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black uppercase tracking-tighter text-slate-800 italic">GIS AI Analysis Intelligence</h3>
+                    <p className="text-[10px] font-bold text-amber-600 uppercase tracking-[0.15em]">Sovereign Geospatial Pipeline • geobots.xyz</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex flex-col text-right">
+                    <span className="text-[10px] font-black uppercase text-emerald-600">Active Syncing</span>
+                    <span className="text-[9px] font-bold text-slate-400">Regional Cluster SF-04</span>
+                  </div>
+                  <button 
+                    onClick={() => setIsGISBotOpen(false)}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all border border-slate-200/50"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 bg-[#F8FAFC]">
+                <iframe 
+                  src="https://geobots.xyz/" 
+                  className="w-full h-full border-none"
+                  title="GIS Analysis Bot"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </main>
 
